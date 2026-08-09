@@ -1,0 +1,224 @@
+/* ==========================================
+   PARAMETRES PAGE (Premium Style)
+========================================== */
+
+.premium-parametres {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 100px; /* Space for the floating save bar */
+    position: relative;
+}
+
+.parametres-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ==========================================
+   LAYOUT GRID
+========================================== */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ==========================================
+   SETTINGS CARDS
+========================================== */
+.settings-card {
+    padding: 32px;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.settings-icon {
+    font-size: 20px;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 8px;
+    border-radius: var(--radius-sm);
+}
+
+.settings-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* ==========================================
+   LOGO UPLOAD
+========================================== */
+.logo-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+}
+
+.logo-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-subtle);
+    border: 2px dashed var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+}
+
+.logo-placeholder svg {
+    font-size: 24px;
+}
+
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+/* ==========================================
+   COLOR PICKERS
+========================================== */
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.color-picker-wrapper:hover {
+    border-color: var(--border-focus);
+}
+
+.color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+}
+
+.color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.color-hex {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* ==========================================
+   FLOATING SAVE BAR
+========================================== */
+.save-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 280px; /* Adjust based on sidebar width */
+    right: 24px;
+    z-index: 100;
+    padding: 16px 32px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-light);
+}
+
+.save-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.save-bar-content p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+@media (max-width: 1024px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .save-bar {
+        left: 24px;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .save-bar-content {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .save-bar-content button {
+        width: 100%;
+    }
+}

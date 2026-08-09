@@ -1,0 +1,127 @@
+/* ==========================================
+   TRANSACTIONS PAGE (Premium Style)
+========================================== */
+
+.premium-transactions {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 40px;
+}
+
+/* ==========================================
+   CHARTS SECTION
+========================================== */
+.chart-card {
+    padding: 32px;
+}
+
+.chart-header {
+    margin-bottom: 24px;
+}
+
+.chart-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chart-header h2 svg {
+    color: var(--primary);
+}
+
+.chart-body {
+    position: relative;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.legend-item .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-item .dot.entrees {
+    background: var(--success);
+}
+
+.legend-item .dot.sorties {
+    background: var(--danger);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-light);
+}
+
+/* ==========================================
+   BADGES & STYLES
+========================================== */
+.type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.type-badge.entree {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.type-badge.sortie {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+/* Override KPI styles for specific transaction stats */
+.kpi-icon-header .kpi-icon {
+    /* Uses inline styles for colors in jsx */
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+    }
+    
+    .table-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        max-width: none !important;
+    }
+}

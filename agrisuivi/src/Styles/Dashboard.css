@@ -1,0 +1,315 @@
+/* ==========================================
+   DASHBOARD (Premium Bento Grid Style)
+========================================== */
+
+.premium-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 40px;
+}
+
+/* ==========================================
+   HERO SECTION
+========================================== */
+.dashboard-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--primary), #059669);
+    color: white;
+    padding: 32px 40px;
+    border: none;
+    box-shadow: var(--shadow-md), inset 0 2px 10px rgba(255,255,255,0.1);
+}
+
+.hero-content h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.hero-content p {
+    font-size: 15px;
+    opacity: 0.9;
+    margin: 0;
+    max-width: 500px;
+}
+
+.hero-actions .btn-primary {
+    background: white;
+    color: var(--primary-hover);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.hero-actions .btn-primary:hover {
+    background: var(--bg-subtle);
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   KPI BENTO GRID
+========================================== */
+.kpi-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 20px;
+}
+
+.kpi-main-card {
+    grid-column: span 2;
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px;
+}
+
+.kpi-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.badge {
+    padding: 4px 12px;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.kpi-main-body h3 {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 24px 0 8px 0;
+    font-weight: 500;
+}
+
+.kpi-main-body h2 {
+    font-size: 36px;
+    color: var(--text-main);
+    margin: 0 0 16px 0;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.trend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.trend.positive {
+    color: var(--primary);
+}
+
+.trend.negative {
+    color: var(--danger);
+}
+
+/* Small Cards */
+.kpi-small-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 16px;
+}
+
+.kpi-icon-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.trend-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.kpi-content h3 {
+    font-size: 24px;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+    font-weight: 700;
+}
+
+.kpi-content p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ==========================================
+   CHARTS & ACTIVITY
+========================================== */
+.dashboard-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.chart-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+}
+
+.chart-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.chart-wrapper {
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Activity Panel */
+.dashboard-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.activity-card {
+    flex: 1;
+}
+
+.card-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 20px 0;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.activity-icon.success {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.activity-icon.info {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.activity-icon.warning {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+.activity-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.activity-text strong {
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.activity-text span {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+@media (max-width: 1200px) {
+    .kpi-bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .kpi-main-card {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 24px;
+    }
+    
+    .kpi-bento-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kpi-main-card {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}

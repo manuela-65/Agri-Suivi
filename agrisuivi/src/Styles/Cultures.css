@@ -1,0 +1,199 @@
+/* ==========================================
+   CULTURES PAGE (Premium Style)
+========================================== */
+
+.premium-cultures {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 40px;
+}
+
+/* ==========================================
+   TABLE SECTION
+========================================== */
+.production-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0; /* Removing padding as table fits to edges */
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.table-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.filter-select {
+    padding-left: 40px;
+    min-width: 150px;
+    cursor: pointer;
+}
+
+/* ==========================================
+   PREMIUM TABLE
+========================================== */
+.premium-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.premium-table th {
+    padding: 16px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.premium-table td {
+    padding: 20px 32px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+}
+
+.premium-table tr:last-child td {
+    border-bottom: none;
+}
+
+.premium-table tr:hover td {
+    background: var(--bg-subtle);
+}
+
+.empty-row {
+    text-align: center !important;
+    padding: 40px !important;
+    color: var(--text-muted) !important;
+    font-style: italic;
+}
+
+/* Badges */
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.type-badge.culture {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.type-badge.elevage {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.planifie {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+}
+
+.status-badge.en_cours {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.status-badge.termine {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+/* Actions */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.delete-btn {
+    color: var(--danger);
+}
+
+.delete-btn:hover {
+    background: var(--danger-light);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+@media (max-width: 1024px) {
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 20px;
+    }
+    
+    .table-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        max-width: none !important;
+    }
+}

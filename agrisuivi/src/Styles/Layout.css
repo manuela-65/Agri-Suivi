@@ -1,0 +1,72 @@
+/* ==========================================
+   LAYOUT PRINCIPAL - ARCHITECTURE
+========================================== */
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--bg-main);
+    overflow: hidden;
+}
+
+/* SIDEBAR REPRÉSENTE LE GAUCHE */
+/* Sidebar itself will have fixed width defined in its own CSS */
+
+/* ==========================================
+   MAIN WRAPPER (HEADER + CONTENT)
+========================================== */
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Important pour éviter le dépassement flexbox */
+    height: 100vh;
+}
+
+/* ==========================================
+   PAGE CONTENT (SCROLLABLE AREA)
+========================================== */
+.page-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    padding: 30px 40px;
+}
+
+/* Scrollbar customization for the main content */
+.page-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+.page-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+.page-wrapper::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 10px;
+}
+.page-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+.page-content {
+    width: 100%;
+    max-width: 1400px; /* Linear / Stripe style constraint */
+    margin: 0 auto;
+}
+
+/* ==========================================
+   RESPONSIVE LAYOUT
+========================================== */
+@media (max-width: 1024px) {
+    .page-wrapper {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-wrapper {
+        padding: 16px;
+    }
+}
