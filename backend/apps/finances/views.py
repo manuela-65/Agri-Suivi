@@ -6,15 +6,19 @@ from .models import CategorieTransaction, Transaction
 from .serializers import CategorieTransactionSerializer, TransactionSerializer
 
 class CategorieTransactionViewSet(viewsets.ModelViewSet):
-    queryset = CategorieTransaction.objects.all()
     serializer_class = CategorieTransactionSerializer
     permission_classes = [permissions.IsAuthenticated, IsAccountant]
 
+    def get_queryset(self):
+        return CategorieTransaction.objects.all()
+
 
 class TransactionViewSet(viewsets.ModelViewSet):
-    queryset = Transaction.objects.all().order_by('-date_transaction', '-id')
     serializer_class = TransactionSerializer
     permission_classes = [permissions.IsAuthenticated, IsAccountant]
+
+    def get_queryset(self):
+        return Transaction.objects.all().order_by('-date_transaction', '-id')
 
     def perform_create(self, serializer):
         serializer.save(cree_par=self.request.user)
@@ -31,7 +35,7 @@ class BilanFinancierView(views.APIView):
         total_revenus = Transaction.objects.filter(type_transaction='REVENU').aggregate(Sum('montant'))['montant__sum'] or 0
         total_achats = Transaction.objects.filter(type_transaction='ACHAT').aggregate(Sum('montant'))['montant__sum'] or 0
         total_depenses = Transaction.objects.filter(type_transaction='DEPENSE').aggregate(Sum('montant'))['montant__sum'] or 0
-        
+
         solde_net = float(total_ventes) + float(total_revenus) - float(total_achats) - float(total_depenses)
 
         return Response({

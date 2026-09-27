@@ -1,0 +1,82 @@
+.stocks-page {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stocks-header {
+  margin-bottom: 24px;
+}
+
+.stocks-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.stocks-header p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* TABS */
+.stocks-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 24px;
+}
+
+/* STOCK ALERT ROW */
+.low-stock-row {
+  background-color: #fef2f2 !important;
+}
+
+.alert-icon {
+  color: #ef4444;
+  margin-right: 8px;
+}
+
+.stock-qty {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+/* ADD/REMOVE BTNS */
+.add-stock {
+  color: #10b981;
+  background: #d1fae5;
+}
+
+.add-stock:hover {
+  background: #a7f3d0;
+}
+
+.remove-stock {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.remove-stock:hover {
+  background: #fecaca;
+}
+
+/* MOVEMENT BADGES */
+.mvt-badge {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mvt-badge.entree { background: #dcfce7; color: #166534; }
+.mvt-badge.sortie { background: #e0f2fe; color: #0284c7; }
+.mvt-badge.perte { background: #fee2e2; color: #991b1b; }

@@ -12,7 +12,9 @@ import {
     FaMoneyBillWave,
     FaUsers,
     FaTimes,
-    FaChevronRight
+    FaChevronRight,
+    FaUserCheck,
+    FaUserTimes
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -107,6 +109,19 @@ function Employes() {
             loadEmployes();
         } catch (error) {
             toast.error("Erreur lors de la suppression.");
+        }
+    };
+
+    const toggleStatut = async (emp, e) => {
+        e.stopPropagation();
+        const nouveauStatut = emp.statut === "ACTIF" ? "INACTIF" : "ACTIF";
+        try {
+            await EmployesService.update(emp.id, { ...emp, statut: nouveauStatut });
+            toast.success(`Employé ${nouveauStatut.toLowerCase()} avec succès.`);
+            loadEmployes();
+        } catch (error) {
+            console.error("Erreur toggle statut", error);
+            toast.error("Erreur lors de la modification du statut.");
         }
     };
 
@@ -206,10 +221,17 @@ function Employes() {
                                     {emp.prenom?.charAt(0)}{emp.nom?.charAt(0)}
                                 </div>
                                 <div className="emp-actions">
-                                    <button className="icon-btn edit-btn" onClick={(e) => modifier(emp, e)}>
+                                    <button 
+                                        className={`icon-btn ${emp.statut === 'ACTIF' ? 'deactivate-btn' : 'activate-btn'}`} 
+                                        onClick={(e) => toggleStatut(emp, e)}
+                                        title={emp.statut === 'ACTIF' ? 'Désactiver' : 'Activer'}
+                                    >
+                                        {emp.statut === 'ACTIF' ? <FaUserTimes /> : <FaUserCheck />}
+                                    </button>
+                                    <button className="icon-btn edit-btn" onClick={(e) => modifier(emp, e)} title="Modifier">
                                         <FaEdit />
                                     </button>
-                                    <button className="icon-btn delete-btn" onClick={(e) => supprimer(emp.id, e)}>
+                                    <button className="icon-btn delete-btn" onClick={(e) => supprimer(emp.id, e)} title="Supprimer">
                                         <FaTrash />
                                     </button>
                                 </div>

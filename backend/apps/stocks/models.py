@@ -59,5 +59,15 @@ class MouvementStock(models.Model):
                 self.article.quantite_en_stock -= self.quantite
             self.article.save()
 
+            if self.article.quantite_en_stock <= self.article.seuil_alerte:
+                from apps.tracabilite.models import Notification
+                if self.effectue_par:
+                    Notification.objects.create(
+                        utilisateur=self.effectue_par,
+                        titre="Stock faible",
+                        message=f"Le stock de {self.article.nom} est passé sous le seuil d'alerte ({self.article.quantite_en_stock} {self.article.unite_mesure} restants).",
+                        type_notif='STOCK'
+                    )
+
     def __str__(self):
         return f"{self.get_type_mouvement_display()} : {self.quantite} {self.article.unite_mesure} de {self.article.nom}"

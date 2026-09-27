@@ -86,6 +86,22 @@
     background: var(--danger-light);
 }
 
+.activate-btn {
+    color: var(--primary);
+}
+
+.activate-btn:hover {
+    background: var(--primary-light);
+}
+
+.deactivate-btn {
+    color: #f59e0b;
+}
+
+.deactivate-btn:hover {
+    background: #fef3c7;
+}
+
 .emp-card-body {
     padding: 20px 24px;
     display: flex;

@@ -54,3 +54,24 @@ class TacheEmploye(models.Model):
 
     def __str__(self):
         return f"{self.titre} ({self.get_statut_display()})"
+
+
+class Pointage(models.Model):
+    """
+    Suivi de la présence quotidienne d'un employé.
+    """
+    employe = models.ForeignKey(Employe, on_delete=models.CASCADE, related_name='pointages')
+    date = models.DateField()
+    statut = models.CharField(
+        max_length=20,
+        choices=[('PRESENT', 'Présent'), ('ABSENT', 'Absent'), ('CONGE', 'Congé')],
+        default='PRESENT'
+    )
+    heures_travaillees = models.DecimalField(max_digits=4, decimal_places=1, default=8.0)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('employe', 'date')
+
+    def __str__(self):
+        return f"{self.employe} - {self.date} ({self.statut})"

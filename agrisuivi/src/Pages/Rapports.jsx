@@ -9,15 +9,28 @@ import {
 } from "react-icons/fa";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { FinancesService, EmployesService, ParametresService } from "../api/apiClient";
 import "../Styles/Rapports.css";
 
 function Rapports() {
-    const [dateDebut, setDateDebut] = useState("");
-    const [dateFin, setDateFin] = useState("");
+    // Initialisation par défaut : mois en cours
+    const getDefaultDates = () => {
+        const now = new Date();
+        const debut = new Date(now.getFullYear(), now.getMonth(), 1);
+        const fin = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return {
+            debut: debut.toISOString().split("T")[0],
+            fin: fin.toISOString().split("T")[0]
+        };
+    };
+    const defaultDates = getDefaultDates();
+    const [dateDebut, setDateDebut] = useState(defaultDates.debut);
+    const [dateFin, setDateFin] = useState(defaultDates.fin);
     const [erreurDate, setErreurDate] = useState("");
+    const [activePeriod, setActivePeriod] = useState("mois");
     
     const [transactions, setTransactions] = useState([]);
     const [employes, setEmployes] = useState([]);
@@ -71,6 +84,7 @@ function Rapports() {
             fin = new Date(aujourd.getFullYear(), 11, 31);
         }
 
+        setActivePeriod(type);
         setDateDebut(debut.toISOString().split("T")[0]);
         setDateFin(fin.toISOString().split("T")[0]);
     };
@@ -209,6 +223,23 @@ function Rapports() {
         }, 1500); 
     };
 
+    const genererRapportExcel = () => {
+        if (!validerDates()) return;
+        if (transactionsFiltrees.length === 0) {
+            toast.error("Aucune transaction sur cette période.");
+            return;
+        }
+        const ws = XLSX.utils.json_to_sheet(transactionsFiltrees.map(t => ({
+            Date: new Date(t.date_transaction).toLocaleDateString("fr-FR"),
+            Type: t.type_transaction,
+            Description: t.description,
+            Montant: t.montant
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+        XLSX.writeFile(wb, `Rapport_${dateDebut}_${dateFin}.xlsx`);
+    };
+
     return (
         <div className="premium-rapports">
             {/* HERO */}
@@ -243,10 +274,10 @@ function Rapports() {
                         </div>
                         
                         <div className="period-presets">
-                            <button className="preset-btn" onClick={() => filtrerPeriode("jour")}>Aujourd'hui</button>
-                            <button className="preset-btn" onClick={() => filtrerPeriode("semaine")}>Cette semaine</button>
-                            <button className="preset-btn" onClick={() => filtrerPeriode("mois")}>Ce mois</button>
-                            <button className="preset-btn" onClick={() => filtrerPeriode("annee")}>Cette année</button>
+                            <button className={`preset-btn ${activePeriod === 'jour' ? 'active' : ''}`} onClick={() => filtrerPeriode("jour")}>Aujourd'hui</button>
+                            <button className={`preset-btn ${activePeriod === 'semaine' ? 'active' : ''}`} onClick={() => filtrerPeriode("semaine")}>Cette semaine</button>
+                            <button className={`preset-btn ${activePeriod === 'mois' ? 'active' : ''}`} onClick={() => filtrerPeriode("mois")}>Ce mois</button>
+                            <button className={`preset-btn ${activePeriod === 'annee' ? 'active' : ''}`} onClick={() => filtrerPeriode("annee")}>Cette année</button>
                         </div>
 
                         <div className="custom-date-range">
@@ -257,7 +288,7 @@ function Rapports() {
                                     type="date"
                                     value={dateDebut}
                                     max={new Date().toISOString().split("T")[0]}
-                                    onChange={(e) => setDateDebut(e.target.value)}
+                                    onChange={(e) => { setDateDebut(e.target.value); setActivePeriod(null); }}
                                 />
                             </div>
                             <div className="date-input-group">
@@ -267,7 +298,7 @@ function Rapports() {
                                     type="date"
                                     value={dateFin}
                                     max={new Date().toISOString().split("T")[0]}
-                                    onChange={(e) => setDateFin(e.target.value)}
+                                    onChange={(e) => { setDateFin(e.target.value); setActivePeriod(null); }}
                                 />
                             </div>
                         </div>
@@ -308,7 +339,7 @@ function Rapports() {
                                     <p><strong>{statsGlobales.nbTransactions}</strong> transactions ont été enregistrées au cours de cette période.</p>
                                 </div>
 
-                                <div className="generate-wrapper">
+                                <div className="generate-wrapper" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                                     <button 
                                         className={`btn btn-primary btn-large generate-btn ${isGenerating ? 'generating' : ''}`}
                                         onClick={genererRapportPDF}
@@ -317,8 +348,14 @@ function Rapports() {
                                         {isGenerating ? (
                                             <><FaSpinner className="spin" /> Génération en cours...</>
                                         ) : (
-                                            <><FaFilePdf /> Télécharger le Rapport PDF</>
+                                            <><FaFilePdf /> Télécharger PDF</>
                                         )}
+                                    </button>
+                                    <button 
+                                        className="btn btn-secondary btn-large generate-btn"
+                                        onClick={genererRapportExcel}
+                                    >
+                                        Télécharger Excel
                                     </button>
                                 </div>
                             </motion.div>

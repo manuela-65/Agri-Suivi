@@ -77,17 +77,23 @@ class RegisterTenantView(views.APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
+            # Création du compte propriétaire dans le schéma PUBLIC (CustomUser est un modèle SHARED).
+            # On renseigne tenant_schema pour que le login retrouve le bon schéma sans scanner tous les tenants.
+            user = CustomUser.objects.create_user(
+                username=data['email'],
+                email=data['email'],
+                password=data['password'],
+                first_name=data['owner_name'],
+                role=CustomUser.Role.PROPRIETAIRE,
+                phone=data.get('phone', ''),
+                tenant_schema=schema_name,
+            )
+
+            # Initialisation des paramètres de l'exploitation dans le schéma tenant (modèle TENANT-spécifique).
             with schema_context(schema_name):
-                user = CustomUser.objects.create_user(
-                    username=data['email'],
-                    email=data['email'],
-                    password=data['password'],
-                    first_name=data['owner_name'],
-                    role=CustomUser.Role.PROPRIETAIRE,
-                    phone=data.get('phone', ''),
-                )
                 ParametresExploitation.objects.create(
                     nom=data['farm_name'],
+                    type_exploitation=data.get('type_exploitation', 'CULTURES'),
                     adresse='',
                     ville='N/A',
                     devise='FCFA',
@@ -124,6 +130,69 @@ class ClientListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == CustomUser.Role.ADMIN_PLATFORME or user.is_superuser:
-            return Client.objects.all()
+            return Client.objects.exclude(schema_name='public')
         # Le propriétaire de l'exploitation s'inscrit avec son email
-        return Client.objects.filter(owner_email=user.email)
+        return Client.objects.filter(owner_email=user.email).exclude(schema_name='public')
+
+
+class PlatformStatisticsView(views.APIView):
+    """
+    Statistiques globales pour le super administrateur (UC10)
+    """
+    permission_classes = [permissions.IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        total_farms = Client.objects.exclude(schema_name='public').count()
+        active_farms = Client.objects.exclude(schema_name='public').filter(is_active=True).count()
+        suspended_farms = Client.objects.exclude(schema_name='public').filter(is_active=False).count()
+        
+        return Response({
+            'total_farms': total_farms,
+            'active_farms': active_farms,
+            'suspended_farms': suspended_farms,
+        })
+
+
+class ClientStatusUpdateView(views.APIView):
+    """
+    Suspendre ou réactiver une exploitation (UC8 & UC9)
+    Seul l'admin de la plateforme peut le faire.
+    """
+    permission_classes = [permissions.IsAuthenticated, IsPlatformAdmin]
+
+    def patch(self, request, pk):
+        try:
+            client = Client.objects.exclude(schema_name='public').get(pk=pk)
+        except Client.DoesNotExist:
+            return Response({'error': 'Exploitation introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        is_active = request.data.get('is_active')
+        if is_active is None:
+            return Response({'error': 'Le champ is_active est requis.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        client.is_active = bool(is_active)
+        client.save()
+
+        status_text = "réactivée" if client.is_active else "suspendue"
+        return Response({
+            'message': f"L'exploitation '{client.name}' a été {status_text} avec succès.",
+            'is_active': client.is_active
+        })
+
+class GlobalNotificationView(views.APIView):
+    """
+    Envoi d'une annonce ou mise à jour globale (UC12)
+    Pour l'instant, c'est un mock qui log l'annonce dans la console du backend.
+    """
+    permission_classes = [permissions.IsAuthenticated, IsPlatformAdmin]
+
+    def post(self, request):
+        message = request.data.get('message')
+        if not message:
+            return Response({'error': 'Le message est requis.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Simulation d'envoi à tous les locataires
+        print(f"\n[NOTIF GLOBALE] De l'admin {request.user.email} à tous les tenants :")
+        print(f"Message : {message}\n")
+
+        return Response({'message': 'La notification a été envoyée avec succès à tous les locataires.'}, status=status.HTTP_200_OK)

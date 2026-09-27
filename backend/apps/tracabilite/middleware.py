@@ -64,14 +64,17 @@ class AuditLogMiddleware:
 
                 from django.db import connection
                 if connection.schema_name != 'public':
-                    AuditLog.objects.create(
-                        utilisateur=user,
-                        nom_utilisateur=user.get_full_name() or user.username,
-                        role_utilisateur=user.role if hasattr(user, 'role') else 'N/A',
-                        type_action=action_map.get(request.method, 'MODIFICATION'),
-                        module=module_name,
-                        description=description_finale,
-                        ip_address=ip
-                    )
+                    try:
+                        AuditLog.objects.create(
+                            utilisateur=user,
+                            nom_utilisateur=user.get_full_name() or user.username,
+                            role_utilisateur=user.role if hasattr(user, 'role') else 'N/A',
+                            type_action=action_map.get(request.method, 'MODIFICATION'),
+                            module=module_name,
+                            description=description_finale,
+                            ip_address=ip
+                        )
+                    except Exception:
+                        pass
 
         return response

@@ -42,7 +42,6 @@ export async function apiFetch(endpoint, options = {}) {
     localStorage.getItem(
       "tenant_schema"
     ) ||
-
     "public";
 
 
@@ -162,6 +161,13 @@ export async function apiFetch(endpoint, options = {}) {
     // -----------------------------------------------
     // Erreur HTTP (400, 401 login, 403, 404, 500…)
     // -----------------------------------------------
+    if (response.status === 404) {
+      if (endpoint === "/auth/token/") {
+        throw new Error("Identifiant de l'exploitation incorrect ou introuvable.");
+      }
+      throw new Error("Ressource non trouvée (Erreur 404)");
+    }
+
     if (!response.ok) {
 
       let errorData = {};
@@ -197,14 +203,6 @@ export async function apiFetch(endpoint, options = {}) {
       throw new Error(message);
     }
 
-    if (response.status === 404) {
-      if (endpoint === "/auth/token/") {
-        throw new Error("Identifiant de l'exploitation incorrect ou introuvable.");
-      }
-      console.error(`API Error: ${endpoint}`, new Error("Erreur 404"));
-      throw new Error("Ressource non trouvée (Erreur 404)");
-    }
-
     if (response.status === 204) {
       return null;
     }
@@ -214,12 +212,23 @@ export async function apiFetch(endpoint, options = {}) {
   } catch (error) {
 
     console.error("Erreur API :", endpoint, error);
+
+    // Erreur réseau : le serveur est inaccessible (502, connexion refusée, etc.)
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error("Impossible de joindre le serveur. Vérifiez que le backend est démarré.");
+    }
+
     throw error;
 
   }
 
 }
 
+
+export const NotificationService = {
+  getNotifications: () => apiFetch('/tracabilite/notifications/'),
+  markAsRead: (id) => apiFetch(`/tracabilite/notifications/${id}/read/`, { method: 'PATCH' })
+};
 
 // =======================================================
 // AUTHENTIFICATION
@@ -231,22 +240,29 @@ export const AuthService = {
 
  login: async (credentials, tenantSchema) => {
 
+   const fetchOptions = {
+
+     method: "POST",
+
+     body: JSON.stringify(credentials),
+
+   };
+
+   // Ne passer tenantOverride que si tenantSchema est explicitement fourni
+
+   if (tenantSchema) {
+
+     fetchOptions.tenantOverride = tenantSchema;
+
+   }
+
    const data =
 
     await apiFetch(
 
       "/auth/token/",
 
-      {
-
-        method: "POST",
-
-        body:
-        JSON.stringify(credentials),
-
-        tenantOverride: tenantSchema || "public"
-
-      }
+      fetchOptions
 
     );
 
@@ -282,6 +298,10 @@ export const AuthService = {
       JSON.stringify(data.user)
 
     );
+
+    if (data.tenant_schema) {
+      localStorage.setItem("tenant_schema", data.tenant_schema);
+    }
 
 
    }
@@ -356,18 +376,58 @@ export const AuthService = {
 
 
 
- logout:()=>{
+ logout: async () => {
+   try {
+     const refreshToken = localStorage.getItem("refresh_token");
+     if (refreshToken) {
+       await apiFetch("/auth/token/logout/", {
+         method: "POST",
+         body: JSON.stringify({ refresh: refreshToken })
+       });
+     }
+   } catch (error) {
+     console.error("Erreur lors de la déconnexion backend:", error);
+   } finally {
+     localStorage.clear();
+     window.location.href="/login";
+   }
+ },
 
+ updateProfile: async (data) => {
+   return apiFetch("/auth/me/", {
+     method: "PUT",
+     body: JSON.stringify(data)
+   });
+ },
 
- localStorage.clear();
+ resetPasswordRequest: async (data, tenantSchema = 'public') => {
+   return apiFetch("/auth/password-reset/", {
+     method: "POST",
+     body: JSON.stringify(data),
+     tenantOverride: tenantSchema
+   });
+ },
 
+ resetPasswordConfirm: async (data, tenantSchema = 'public') => {
+   return apiFetch("/auth/password-reset/confirm/", {
+     method: "POST",
+     body: JSON.stringify(data),
+     tenantOverride: tenantSchema
+   });
+ },
 
- window.location.href="/login";
+ sendPhoneOTP: async () => {
+   return apiFetch("/auth/phone-otp/send/", {
+     method: "POST"
+   });
+ },
 
-
+ verifyPhoneOTP: async (data) => {
+   return apiFetch("/auth/phone-otp/verify/", {
+     method: "POST",
+     body: JSON.stringify(data)
+   });
  }
-
-
 
 };
 
@@ -567,66 +627,8 @@ method:"DELETE"
 
 
 // =======================================================
-// STOCKS
+// CULTURES
 // =======================================================
-
-
-export const StocksService = {
-
-
-
-getAll:()=>{
-
-
-return apiFetch(
-
-"/stocks/articles/"
-
-);
-
-
-},
-
-
-
-
-
-create:(data)=>{
-
-
-return apiFetch(
-
-"/stocks/articles/",
-
-
-{
-
-method:"POST",
-
-body:JSON.stringify(data)
-
-
-}
-
-
-);
-
-
-},
-
-
-
-
-
-addMouvement:(data)=>{
-return apiFetch("/stocks/mouvements/",{method:"POST",body:JSON.stringify(data)});
-},
-
-delete:(id)=>{
-return apiFetch(`/stocks/articles/${id}/`,{method:"DELETE"});
-}
-
-};
 
 
 
@@ -639,99 +641,6 @@ return apiFetch(`/stocks/articles/${id}/`,{method:"DELETE"});
 // =======================================================
 // CULTURES
 // =======================================================
-
-
-export const CulturesService = {
-
-
-
-getCultures:()=>{
-
-
-return apiFetch(
-
-"/cultures/list/"
-
-);
-
-
-},
-
-
-
-
-
-    getParcelles:()=>{
-        return apiFetch("/cultures/parcelles/");
-    },
-
-    createParcelle:(data)=>{
-        return apiFetch("/cultures/parcelles/", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-    },
-
-
-
-
-
-    getElevages:()=>{
-        return apiFetch("/cultures/elevages/");
-    },
-
-    createCulture:(data)=>{
-        return apiFetch("/cultures/list/", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-    },
-
-    createElevage:(data)=>{
-        return apiFetch("/cultures/elevages/", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-    },
-
-    deleteCulture:(id)=>{
-        return apiFetch(`/cultures/list/${id}/`, {
-            method: "DELETE"
-        });
-    },
-
-    deleteElevage:(id)=>{
-        return apiFetch(`/cultures/elevages/${id}/`, {
-            method: "DELETE"
-        });
-    },
-
-
-
-
-
-getActivites:()=>{
-
-
-return apiFetch(
-
-"/cultures/activites/"
-
-);
-
-
-}
-
-
-
-};
-
-
-
-
-
-
-
 
 
 // =======================================================
@@ -775,17 +684,16 @@ return apiFetch(
 
 
 
-create:(data)=>{
-return apiFetch(
-"/finances/list/",
-{
- method:"POST",
- body:JSON.stringify(data),
- headers:{
-     "Content-Type": "application/json"
- }
-}
-);
+create: (data) => {
+  const isFormData = data instanceof FormData;
+  const options = {
+    method: "POST",
+    body: isFormData ? data : JSON.stringify(data),
+  };
+  if (!isFormData) {
+    options.headers = { "Content-Type": "application/json" };
+  }
+  return apiFetch("/finances/list/", options);
 }
 
 
@@ -863,3 +771,135 @@ updateParams: (data) => {
 
 
 };
+
+// =======================================================
+// SUPER ADMIN
+// =======================================================
+
+export const SuperAdminService = {
+  getPlatformStats: () => {
+    return apiFetch("/tenants/stats/", { tenantOverride: "public" });
+  },
+
+  getAllClients: () => {
+    return apiFetch("/tenants/list/", { tenantOverride: "public" });
+  },
+
+  updateClientStatus: (id, isActive) => {
+    return apiFetch(`/tenants/${id}/status/`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_active: isActive }),
+      tenantOverride: "public"
+    });
+  },
+
+  sendGlobalNotification: (message) => {
+    return apiFetch(`/tenants/notify/`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+      tenantOverride: "public"
+    });
+  }
+};
+
+
+// =====================================
+// EMPLOYES (Gestion de l'équipe)
+// =====================================
+export const EmployeService = {
+  getAllEmployes: () => {
+    return apiFetch("/employes/list/");
+  },
+  
+  createEmploye: (data) => {
+    return apiFetch("/employes/list/", {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  },
+  
+  updateEmploye: (id, data) => {
+    return apiFetch(`/employes/list/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data)
+    });
+  },
+  
+  deleteEmploye: (id) => {
+    return apiFetch(`/employes/list/${id}/`, {
+      method: "DELETE"
+    });
+  },
+
+  getPointages: () => apiFetch("/employes/pointages/"),
+  createPointage: (data) => apiFetch("/employes/pointages/", { method: "POST", body: JSON.stringify(data) }),
+  deletePointage: (id) => apiFetch(`/employes/pointages/${id}/`, { method: "DELETE" })
+};
+
+// =====================================
+// CULTURES ET ÉLEVAGE
+// =====================================
+export const CultureService = {
+  // Parcelles
+  getParcelles: () => apiFetch("/cultures/parcelles/"),
+  createParcelle: (data) => apiFetch("/cultures/parcelles/", { method: "POST", body: JSON.stringify(data) }),
+  updateParcelle: (id, data) => apiFetch(`/cultures/parcelles/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteParcelle: (id) => apiFetch(`/cultures/parcelles/${id}/`, { method: "DELETE" }),
+
+  // Cultures
+  getCultures: () => apiFetch("/cultures/list/"),
+  createCulture: (data) => apiFetch("/cultures/list/", { method: "POST", body: JSON.stringify(data) }),
+  updateCulture: (id, data) => apiFetch(`/cultures/list/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteCulture: (id) => apiFetch(`/cultures/list/${id}/`, { method: "DELETE" }),
+
+  // Elevage
+  getElevages: () => apiFetch("/cultures/elevages/"),
+  createElevage: (data) => apiFetch("/cultures/elevages/", { method: "POST", body: JSON.stringify(data) }),
+  updateElevage: (id, data) => apiFetch(`/cultures/elevages/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteElevage: (id) => apiFetch(`/cultures/elevages/${id}/`, { method: "DELETE" }),
+
+  // Activités
+  getActivites: () => 
+    apiFetch("/cultures/activites/"),
+
+  createActivite: (data) => 
+    apiFetch("/cultures/activites/", {
+      method: "POST",
+      body: data instanceof FormData
+        ? data
+        : JSON.stringify(data)
+    }),
+
+  updateActivite: (id, data) => 
+    apiFetch(`/cultures/activites/${id}/`, {
+      method: "PATCH",
+      body: data instanceof FormData
+        ? data
+        : JSON.stringify(data)
+    }),
+
+  deleteActivite: (id) => 
+    apiFetch(`/cultures/activites/${id}/`, {
+      method: "DELETE"
+    })
+};
+
+// =====================================
+// STOCKS
+// =====================================
+export const StocksService = {
+  // Catégories
+  getCategories: () => apiFetch("/stocks/categories/"),
+  
+  // Articles
+  getArticles: () => apiFetch("/stocks/articles/"),
+  createArticle: (data) => apiFetch("/stocks/articles/", { method: "POST", body: JSON.stringify(data) }),
+  updateArticle: (id, data) => apiFetch(`/stocks/articles/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteArticle: (id) => apiFetch(`/stocks/articles/${id}/`, { method: "DELETE" }),
+
+  // Mouvements
+  getMouvements: () => apiFetch("/stocks/mouvements/"),
+  createMouvement: (data) => apiFetch("/stocks/mouvements/", { method: "POST", body: JSON.stringify(data) }),
+};
+
+export const StockService = StocksService;

@@ -1,4 +1,8 @@
-from django.http import HttpResponse
+import mimetypes
+from pathlib import Path
+
+from django.conf import settings
+from django.http import FileResponse, Http404, HttpResponse, StreamingHttpResponse
 from django.urls import reverse
 
 
@@ -43,3 +47,52 @@ def tenant_home(request):
     </html>
     """
     return HttpResponse(html)
+
+
+def media_file(request, path):
+    file_path = (Path(settings.MEDIA_ROOT) / path).resolve()
+    media_root = Path(settings.MEDIA_ROOT).resolve()
+
+    if media_root not in file_path.parents or not file_path.is_file():
+        raise Http404
+
+    file_size = file_path.stat().st_size
+    content_type = mimetypes.guess_type(file_path.name)[0] or 'application/octet-stream'
+    range_header = request.headers.get('Range')
+
+    if not range_header or not range_header.startswith('bytes='):
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+        response['Content-Length'] = str(file_size)
+        response['Accept-Ranges'] = 'bytes'
+        response['Content-Disposition'] = 'inline'
+        return response
+
+    try:
+        start, end = range_header[6:].split('-', 1)
+        start = int(start) if start else 0
+        end = int(end) if end else file_size - 1
+        end = min(end, file_size - 1)
+        if start < 0 or start > end or start >= file_size:
+            raise ValueError
+    except ValueError:
+        return HttpResponse(status=416, headers={'Content-Range': f'bytes */{file_size}'})
+
+    length = end - start + 1
+
+    def read_range():
+        with open(file_path, 'rb') as media:
+            media.seek(start)
+            remaining = length
+            while remaining:
+                chunk = media.read(min(1024 * 1024, remaining))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+                yield chunk
+
+    response = StreamingHttpResponse(read_range(), status=206, content_type=content_type)
+    response['Content-Length'] = str(length)
+    response['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+    response['Accept-Ranges'] = 'bytes'
+    response['Content-Disposition'] = 'inline'
+    return response

@@ -2,6 +2,13 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+# Charger les variables d'environnement depuis .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env' if False else Path(__file__).resolve().parent.parent / '.env')
+except ImportError:
+    pass
+
 # Patch psycopg2 pour capturer les erreurs de connexion PostgreSQL sur Windows
 try:
     import psycopg2
@@ -63,6 +70,7 @@ TENANT_APPS = [
     'apps.finances',
     'apps.tracabilite',
     'apps.rapports',
+    'apps.assistant_ia',
 ]
 
 INSTALLED_APPS = list(dict.fromkeys(SHARED_APPS + TENANT_APPS))

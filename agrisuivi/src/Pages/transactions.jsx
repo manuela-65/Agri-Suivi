@@ -21,6 +21,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { FinancesService } from "../api/apiClient";
 import "../Styles/Transactions.css";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const COLORS = {
     entrees: '#22c55e', 
@@ -43,6 +46,7 @@ function Transactions() {
         description: "",
         mode_paiement: "CASH"
     });
+    const [file, setFile] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -81,10 +85,16 @@ function Transactions() {
     const enregistrer = async (e) => {
         e.preventDefault();
         try {
-            await FinancesService.create(form);
+            const formData = new FormData();
+            Object.keys(form).forEach(key => formData.append(key, form[key]));
+            if (file) {
+                formData.append('justificatif_photo', file);
+            }
+            await FinancesService.create(formData);
             toast.success("Transaction enregistrée !");
             setModal(false);
             setForm({ type_transaction: "VENTE", montant: "", date_transaction: "", description: "", mode_paiement: "CASH" });
+            setFile(null);
             loadData();
         } catch (error) {
             toast.error("Erreur lors de l'enregistrement de la transaction.");
@@ -98,9 +108,36 @@ function Transactions() {
     const resultats = transactions.filter(t => {
         const matchRecherche = (t.description || "").toLowerCase().includes(recherche.toLowerCase());
         const categoryType = ['VENTE', 'REVENU'].includes(t.type_transaction) ? 'Entrée' : 'Sortie';
-        const matchFiltre = filtre === "Tous" || categoryType === filtre;
-        return matchRecherche && matchFiltre;
+        return matchRecherche && (filtre === "Tous" || filtre === categoryType);
     });
+
+    const exportPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Historique des Transactions", 14, 15);
+        const tableColumn = ["Date", "Type", "Montant (FCFA)", "Description", "Paiement"];
+        const tableRows = resultats.map(t => [
+            t.date_transaction,
+            t.type_transaction,
+            t.montant,
+            t.description,
+            t.mode_paiement
+        ]);
+        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
+        doc.save("transactions.pdf");
+    };
+
+    const exportExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(resultats.map(t => ({
+            Date: t.date_transaction,
+            Type: t.type_transaction,
+            "Montant (FCFA)": t.montant,
+            Description: t.description,
+            Paiement: t.mode_paiement
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+        XLSX.writeFile(wb, "transactions.xlsx");
+    };
 
     const pieData = [
         { name: "Entrées", value: bilan.total_recettes },
@@ -226,7 +263,7 @@ function Transactions() {
                                 onChange={(e) => setRecherche(e.target.value)}
                             />
                         </div>
-                        <div className="filter-wrapper">
+                        <div className="filter-wrapper" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <FaFilter className="filter-icon" />
                             <select 
                                 value={filtre} 
@@ -237,6 +274,8 @@ function Transactions() {
                                 <option value="Entrée">Entrées</option>
                                 <option value="Sortie">Sorties</option>
                             </select>
+                            <button className="btn-secondary" onClick={exportPDF}>Export PDF</button>
+                            <button className="btn-secondary" onClick={exportExcel}>Export Excel</button>
                         </div>
                     </div>
                 </div>
@@ -260,31 +299,44 @@ function Transactions() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {resultats.map((t) => {
-                                    const isEntree = ['VENTE', 'REVENU'].includes(t.type_transaction);
-                                    return (
-                                        <tr key={t.id}>
-                                            <td>{t.date_transaction}</td>
-                                            <td>
-                                                <span className={`type-badge ${isEntree ? 'entree' : 'sortie'}`}>
-                                                    {t.type_transaction}
-                                                </span>
-                                            </td>
-                                            <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{t.description || "Transaction"}</td>
-                                            <td>{t.mode_paiement}</td>
-                                            <td style={{ fontWeight: 700, color: isEntree ? 'var(--success)' : 'var(--danger)' }}>
-                                                {isEntree ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
-                                            </td>
-                                            <td>
-                                                <div className="actions-cell">
-                                                    <button className="icon-btn delete-btn" onClick={() => supprimer(t.id)} title="Annuler transaction">
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                <AnimatePresence>
+                                    {resultats.map((t, index) => {
+                                        const isEntree = ['VENTE', 'REVENU'].includes(t.type_transaction);
+                                        return (
+                                            <motion.tr 
+                                                key={t.id}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 20 }}
+                                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                            >
+                                                <td>{t.date_transaction}</td>
+                                                <td>
+                                                    <span className={`type-badge ${isEntree ? 'entree' : 'sortie'}`}>
+                                                        {t.type_transaction}
+                                                    </span>
+                                                </td>
+                                                <td style={{ fontWeight: 600, color: 'var(--text-main)', transition: 'all 0.3s' }}>{t.description || "Transaction"}</td>
+                                                <td>{t.mode_paiement}</td>
+                                                <td style={{ fontWeight: 700, color: isEntree ? 'var(--success)' : 'var(--danger)' }}>
+                                                    {isEntree ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
+                                                </td>
+                                                <td>
+                                                    <div className="actions-cell">
+                                                        <button className="btn-icon delete" onClick={() => supprimer(t.id)}>
+                                                            <FaTrash />
+                                                        </button>
+                                                        {t.justificatif_photo && (
+                                                            <a href={t.justificatif_photo} target="_blank" rel="noreferrer" style={{ marginLeft: '10px', fontSize: '0.8rem', color: '#16a34a' }}>
+                                                                Voir Justificatif
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
+                                </AnimatePresence>
                                 {resultats.length === 0 && (
                                     <tr>
                                         <td colSpan="6" className="empty-row">Aucune transaction trouvée.</td>
@@ -369,6 +421,12 @@ function Transactions() {
                                         </select>
                                     </div>
                                 </div>
+                                
+                                <div className="form-group" style={{ marginTop: '15px' }}>
+                                    <label>Justificatif (Optionnel)</label>
+                                    <input type="file" onChange={(e) => setFile(e.target.files[0])} accept="image/*,application/pdf" />
+                                </div>
+
                                 <div className="modal-actions">
                                     <button type="button" className="btn btn-secondary" onClick={() => setModal(false)}>Annuler</button>
                                     <button type="submit" className="btn btn-primary">Valider</button>

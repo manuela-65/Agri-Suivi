@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Django - fichiers média générés
+backend/media/
+
+# Fichiers temporaires Django
+backend/tmp_http_test_random.log
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environnement virtuel Python
+venv/
+.venv/
+
+# Variables d'environnement
+.env

@@ -65,6 +65,7 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 32px;
+    min-height: 380px; /* Augmente la hauteur de la carte principale */
 }
 
 .kpi-main-header {
@@ -127,8 +128,10 @@
 .kpi-small-card {
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    justify-content: space-between;
+    padding: 28px 24px;
     gap: 16px;
+    min-height: 180px; /* Augmente la hauteur des petites cartes */
 }
 
 .kpi-icon-header {

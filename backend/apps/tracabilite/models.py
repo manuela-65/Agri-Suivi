@@ -22,6 +22,7 @@ class AuditLog(models.Model):
     )
     module = models.CharField(max_length=100, help_text="ex: Stocks, Cultures, Employés, Finances")
     description = models.TextField(help_text="Détail lisible de l'opération effectuée")
+    video_url = models.URLField(max_length=500, blank=True, null=True, help_text="URL de la vidéo associée à l'activité")
     ip_address = models.GenericIPAddressField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -30,3 +31,25 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"[{self.created_at.strftime('%Y-%m-%d %H:%M')}] {self.nom_utilisateur} - {self.type_action} ({self.module})"
+
+
+class Notification(models.Model):
+    """
+    Notifications in-app pour l'utilisateur.
+    """
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    titre = models.CharField(max_length=150)
+    message = models.TextField()
+    type_notif = models.CharField(
+        max_length=50, 
+        choices=[('INFO', 'Information'), ('ALERTE', 'Alerte'), ('TACHE', 'Tâche'), ('STOCK', 'Stock')],
+        default='INFO'
+    )
+    est_lu = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notif: {self.titre} - {self.utilisateur.username}"

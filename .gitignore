@@ -1,0 +1,31 @@
+# Django - fichiers média générés
+backend/media/
+
+# Fichiers temporaires
+backend/tmp_http_test_random.log
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environnement virtuel
+venv/
+.venv/
+
+# Variables d'environnement
+.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+
+# Logs
+*.log
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+# Secrets / variables d'environnement
+backend/.env

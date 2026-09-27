@@ -45,15 +45,24 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user, tenant]);
 
-  const login = async (email, password, tenantSchema = 'public') => {
+  const login = async (email, password, tenantSchema = null) => {
     setLoading(true);
     try {
-      localStorage.setItem('tenant_schema', tenantSchema);
-      setTenant(tenantSchema);
+      // Ne pas pré-définir le tenant si non fourni - laisser le backend le déterminer
+      if (tenantSchema) {
+        localStorage.setItem('tenant_schema', tenantSchema);
+        setTenant(tenantSchema);
+      }
+      
       const data = await AuthService.login(
         { username: email, password },
         tenantSchema
       );
+      
+      // Utiliser le tenant retourné par le backend, sinon utiliser celui passé en paramètre
+      const resolvedTenant = data.tenant_schema || tenantSchema || 'public';
+      localStorage.setItem('tenant_schema', resolvedTenant);
+      setTenant(resolvedTenant);
       setUser(data.user);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       return data;

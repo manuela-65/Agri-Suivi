@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 from apps.employes.models import Employe
 
@@ -57,6 +59,18 @@ class ActiviteAgricole(models.Model):
     date_activite = models.DateField()
     description = models.TextField()
     cout_associe = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, help_text="en FCFA")
+    preuve_video = models.FileField(upload_to='activites/videos/', blank=True, null=True, help_text="Vidéo de preuve de l'activité")
+    preuve_video_hash = models.CharField(max_length=64, blank=True, null=True, editable=False, db_index=True)
+
+    def save(self, *args, **kwargs):
+        if self.preuve_video and not self.preuve_video_hash:
+            digest = hashlib.sha256()
+            self.preuve_video.open('rb')
+            for chunk in iter(lambda: self.preuve_video.read(1024 * 1024), b''):
+                digest.update(chunk)
+            self.preuve_video.seek(0)
+            self.preuve_video_hash = digest.hexdigest()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.type_activite} du {self.date_activite}"

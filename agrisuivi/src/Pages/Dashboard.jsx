@@ -58,28 +58,28 @@ function Dashboard() {
     const indicators = [
         {
             title: "Parcelles & Élevage",
-            value: stats.kpi.parcelles_totales,
+            value: stats?.kpi?.parcelles_totales || 0,
             icon: <FaTractor />,
             trend: "+2% ce mois",
             color: "var(--primary)"
         },
         {
             title: "Cultures actives",
-            value: stats.kpi.cultures_en_cours,
+            value: stats?.kpi?.cultures_en_cours || 0,
             icon: <FaSeedling />,
             trend: "Optimal",
             color: "#0284c7"
         },
         {
             title: "Employés",
-            value: stats.kpi.employes_actifs,
+            value: stats?.kpi?.employes_actifs || 0,
             icon: <FaUsers />,
             trend: "Stable",
             color: "#8b5cf6"
         },
         {
             title: "Alertes Stocks",
-            value: stats.kpi.alertes_stock,
+            value: stats?.kpi?.alertes_stock || 0,
             icon: <FaBoxes />,
             trend: "À vérifier",
             color: "var(--accent)"
@@ -132,7 +132,7 @@ function Dashboard() {
                     </div>
                     <div className="kpi-main-body">
                         <h3>Solde Net</h3>
-                        <h2>{stats.finances.solde_net.toLocaleString()} {stats.finances.devise}</h2>
+                        <h2>{(stats?.finances?.solde_net || 0).toLocaleString()} {stats?.finances?.devise || "FCFA"}</h2>
                         <div className="trend positive">
                             <FaArrowUp /> 14% par rapport au mois dernier
                         </div>
@@ -207,6 +207,9 @@ function Dashboard() {
 
                 {/* Side Panel */}
                 <div className="dashboard-side-panel">
+
+
+
                     <motion.div 
                         className="activity-card premium-card"
                         initial={{ opacity: 0, x: 20 }}

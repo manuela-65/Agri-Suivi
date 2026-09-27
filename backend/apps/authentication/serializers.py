@@ -29,8 +29,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_active_employee', 'date_joined']
-        read_only_fields = ['id', 'date_joined']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_phone_verified', 'is_active_employee', 'date_joined']
+        read_only_fields = ['id', 'date_joined', 'is_phone_verified', 'role']
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
@@ -47,3 +47,18 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True, required=True, min_length=6)
     new_password = serializers.CharField(write_only=True, required=True, min_length=6)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    tenant_schema = serializers.CharField(required=False, allow_blank=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=6)
+
+
+class VerifyPhoneOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField(required=True, max_length=6)

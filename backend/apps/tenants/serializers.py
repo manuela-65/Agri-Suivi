@@ -22,6 +22,14 @@ class RegisterTenantSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, min_length=6)
     phone = serializers.CharField(max_length=30, required=False, allow_blank=True)
     region = serializers.CharField(max_length=100, default="Centre")
+    type_exploitation = serializers.ChoiceField(
+        choices=[
+            ('CULTURES', 'Cultures'),
+            ('ELEVAGE', 'Élevage'),
+            ('MIXTE', 'Cultures et Élevage'),
+        ],
+        default='CULTURES',
+    )
 
     def validate_schema_name(self, value):
         normalized = value.lower().replace('-', '_')

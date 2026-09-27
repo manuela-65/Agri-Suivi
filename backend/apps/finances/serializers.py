@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import serializers
 from .models import CategorieTransaction, Transaction
 
@@ -14,6 +16,11 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = '__all__'
+
+    def validate_date_transaction(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("La date ne peut pas être dans le futur.")
+        return value
 
     def get_cree_par_nom(self, obj):
         if obj.cree_par:

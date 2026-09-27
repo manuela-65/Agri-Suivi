@@ -40,8 +40,22 @@ class Transaction(models.Model):
         default='CASH'
     )
     reference_recu = models.CharField(max_length=100, blank=True, null=True, help_text="N° de recu ou référence Mobile Money")
+    justificatif_photo = models.ImageField(upload_to='justificatifs/', blank=True, null=True, help_text="Photo du reçu ou de la facture")
     cree_par = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new and self.type_transaction == 'DEPENSE' and self.montant > 500000:
+            from apps.tracabilite.models import Notification
+            if self.cree_par:
+                Notification.objects.create(
+                    utilisateur=self.cree_par,
+                    titre="Dépense inhabituelle",
+                    message=f"Une dépense importante de {self.montant} FCFA a été enregistrée : {self.description}.",
+                    type_notif='ALERTE'
+                )
 
     def __str__(self):
         return f"{self.get_type_transaction_display()} - {self.montant} FCFA ({self.date_transaction})"

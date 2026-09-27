@@ -6,7 +6,6 @@ import {
   FaLock,
   FaEye,
   FaEyeSlash,
-  FaBuilding,
   FaArrowRight,
   FaLeaf,
   FaShieldAlt,
@@ -27,8 +26,6 @@ function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    tenant_schema:
-      (localStorage.getItem("tenant_schema") === "public" ? "" : localStorage.getItem("tenant_schema")) || "",
   });
 
   const handleChange = (e) => {
@@ -41,39 +38,33 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.email ||
-      !formData.password ||
-      !formData.tenant_schema
-    ) {
+    if (!formData.email || !formData.password) {
       toast.error("Veuillez remplir tous les champs.");
       return;
     }
 
-    if (formData.tenant_schema.toLowerCase() === "public" && formData.email !== "admin@agrisuivi.cm") {
-      toast.error("L'identifiant 'public' est réservé à l'administration. Veuillez entrer l'identifiant de votre exploitation.");
-      return;
-    }
+    const normalizedEmail = formData.email.trim().toLowerCase();
 
     setLoading(true);
 
     try {
       const data = await login(
-        formData.email,
-        formData.password,
-        formData.tenant_schema
+        normalizedEmail,
+        formData.password
+        // Ne pas passer de tenant - laisser le backend auto-détecter
       );
 
       toast.success("Bienvenue sur AgriSuivi !");
 
       const role = data?.user?.role || "PROPRIETAIRE";
 
-      navigate(
-        role === "EMPLOYE"
-          ? "/employe-dashboard"
-          : "/dashboard",
-        { fullScreen: true }
-      );
+      if (role === "ADMIN_PLATFORME") {
+        navigate("/super-admin", { fullScreen: true });
+      } else if (role === "EMPLOYE") {
+        navigate("/employe-dashboard", { fullScreen: true });
+      } else {
+        navigate("/dashboard", { fullScreen: true });
+      }
     } catch (error) {
       // Traduire les messages Django JWT en français
       let msg = error.message || "";
@@ -214,20 +205,6 @@ function Login() {
           <p className="subtitle">
             Connectez-vous à votre espace AgriSuivi.
           </p>
-
-          <div className="input-group">
-
-            <FaBuilding />
-
-            <input
-              type="text"
-              name="tenant_schema"
-              placeholder="Identifiant de l'exploitation"
-              value={formData.tenant_schema}
-              onChange={handleChange}
-            />
-
-          </div>
 
           <div className="input-group">
 

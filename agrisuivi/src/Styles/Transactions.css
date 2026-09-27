@@ -125,3 +125,132 @@
         max-width: none !important;
     }
 }
+
+/* ==========================================
+   PREMIUM TABLE
+========================================== */
+.premium-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Adds space between rows */
+    text-align: left;
+    min-width: 800px;
+}
+
+.premium-table th {
+    padding: 16px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    background: transparent;
+    border: none;
+}
+
+.premium-table td {
+    padding: 20px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-main, #1e293b);
+    background: #ffffff;
+    vertical-align: middle;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Rounded corners for individual rows */
+.premium-table td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.premium-table td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.premium-table tr {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border-radius: 12px;
+    position: relative;
+    cursor: default;
+}
+
+.premium-table tr:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+}
+
+.premium-table tr:hover td {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.type-badge {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.type-badge.entree {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.type-badge.sortie {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-icon.delete {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.1);
+}
+
+.btn-icon.delete:hover {
+    background: #ef4444;
+    color: #ffffff;
+    transform: rotate(15deg) scale(1.1);
+}
+
+.empty-row {
+    text-align: center;
+    padding: 60px !important;
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 500;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.empty-row:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}

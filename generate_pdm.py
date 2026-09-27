@@ -1,0 +1,369 @@
+# -*- coding: utf-8 -*-
+"""
+Générateur de fichier PDM (PowerAMC / SAP PowerDesigner) pour AgriSuivi.
+Exécuter : python generate_pdm.py
+"""
+
+PDM_CONTENT = r"""<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:a="attribute" xmlns:c="collection" xmlns:o="object">
+   <o:RootObject>
+      <a:Name>AgriSuivi</a:Name>
+      <c:Children>
+         <o:Model>
+            <a:Name>AgriSuivi - Modele de donnees physique</a:Name>
+            <a:Code>AgriSuivi</a:Code>
+            <a:Comment>Modele de donnees physique - AgriSuivi SaaS Agricole Cameroun - PostgreSQL Multi-Tenant</a:Comment>
+            <a:Author>AgriSuivi Dev Team</a:Author>
+            <a:Version>1.0</a:Version>
+            <c:Tables>
+
+               <o:Table Id="T_CLIENT">
+                  <a:Name>Client</a:Name>
+                  <a:Code>client</a:Code>
+                  <a:Comment>Tenant SaaS - Exploitation agricole (schema public)</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_CLI_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_CLI_SCH"><a:Name>schema_name</a:Name><a:Code>schema_name</a:Code><a:DataType>VARCHAR(63)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>Nom unique du schema PostgreSQL ex: ferme_dupont</a:Comment></o:Column>
+                     <o:Column Id="C_CLI_NOM"><a:Name>name</a:Name><a:Code>name</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>Nom commercial de l exploitation</a:Comment></o:Column>
+                     <o:Column Id="C_CLI_OWN"><a:Name>owner_name</a:Name><a:Code>owner_name</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CLI_EML"><a:Name>owner_email</a:Name><a:Code>owner_email</a:Code><a:DataType>VARCHAR(254)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CLI_PHN"><a:Name>phone</a:Name><a:Code>phone</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_CLI_RGN"><a:Name>region</a:Name><a:Code>region</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory><a:DefaultValue>Centre</a:DefaultValue></o:Column>
+                     <o:Column Id="C_CLI_ACT"><a:Name>is_active</a:Name><a:Code>is_active</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>TRUE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_CLI_CRT"><a:Name>created_on</a:Name><a:Code>created_on</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_CLI"><a:Name>PK_CLIENT</a:Name><c:Key.Columns><o:Column Ref="C_CLI_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_DOMAIN">
+                  <a:Name>Domain</a:Name>
+                  <a:Code>domain</a:Code>
+                  <a:Comment>Domaine HTTP rattache a un tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_DOM_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_DOM_DMN"><a:Name>domain</a:Name><a:Code>domain</a:Code><a:DataType>VARCHAR(253)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: ferme-dupont.localhost</a:Comment></o:Column>
+                     <o:Column Id="C_DOM_PRI"><a:Name>is_primary</a:Name><a:Code>is_primary</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>FALSE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_DOM_TEN"><a:Name>tenant_id</a:Name><a:Code>tenant_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>FK vers Client</a:Comment></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_DOM"><a:Name>PK_DOMAIN</a:Name><c:Key.Columns><o:Column Ref="C_DOM_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_USER">
+                  <a:Name>CustomUser</a:Name>
+                  <a:Code>authentication_customuser</a:Code>
+                  <a:Comment>Utilisateur plateforme (herite AbstractUser Django) - Schema public SHARED</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_USR_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_USR_USN"><a:Name>username</a:Name><a:Code>username</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>Identifiant unique souvent = email</a:Comment></o:Column>
+                     <o:Column Id="C_USR_EML"><a:Name>email</a:Name><a:Code>email</a:Code><a:DataType>VARCHAR(254)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_FNM"><a:Name>first_name</a:Name><a:Code>first_name</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_LNM"><a:Name>last_name</a:Name><a:Code>last_name</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_PWD"><a:Name>password</a:Name><a:Code>password</a:Code><a:DataType>VARCHAR(128)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>Hash mot de passe Django</a:Comment></o:Column>
+                     <o:Column Id="C_USR_ROL"><a:Name>role</a:Name><a:Code>role</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>EMPLOYE</a:DefaultValue><a:Comment>PROPRIETAIRE | EMPLOYE | COMPTABLE | ADMIN_PLATFORME</a:Comment></o:Column>
+                     <o:Column Id="C_USR_PHN"><a:Name>phone</a:Name><a:Code>phone</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_PHV"><a:Name>is_phone_verified</a:Name><a:Code>is_phone_verified</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>FALSE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_USR_AVT"><a:Name>avatar</a:Name><a:Code>avatar</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_ACE"><a:Name>is_active_employee</a:Name><a:Code>is_active_employee</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>TRUE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_USR_ACT"><a:Name>is_active</a:Name><a:Code>is_active</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>TRUE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_USR_STF"><a:Name>is_staff</a:Name><a:Code>is_staff</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>FALSE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_USR_DJN"><a:Name>date_joined</a:Name><a:Code>date_joined</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_USR_LLG"><a:Name>last_login</a:Name><a:Code>last_login</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_USR"><a:Name>PK_CUSTOMUSER</a:Name><c:Key.Columns><o:Column Ref="C_USR_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_PARAMS">
+                  <a:Name>ParametresExploitation</a:Name>
+                  <a:Code>exploitations_parametresexploitation</a:Code>
+                  <a:Comment>Parametres et personnalisation exploitation - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_PRM_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_PRM_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_PRM_TYP"><a:Name>type_exploitation</a:Name><a:Code>type_exploitation</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>CULTURES</a:DefaultValue><a:Comment>CULTURES | ELEVAGE</a:Comment></o:Column>
+                     <o:Column Id="C_PRM_LOG"><a:Name>logo</a:Name><a:Code>logo</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_PRM_CP"><a:Name>couleur_primaire</a:Name><a:Code>couleur_primaire</a:Code><a:DataType>VARCHAR(7)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>#2e7d32</a:DefaultValue></o:Column>
+                     <o:Column Id="C_PRM_CS"><a:Name>couleur_secondaire</a:Name><a:Code>couleur_secondaire</a:Code><a:DataType>VARCHAR(7)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>#81c784</a:DefaultValue></o:Column>
+                     <o:Column Id="C_PRM_ADR"><a:Name>adresse</a:Name><a:Code>adresse</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_PRM_VIL"><a:Name>ville</a:Name><a:Code>ville</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>Yaounde</a:DefaultValue></o:Column>
+                     <o:Column Id="C_PRM_DEV"><a:Name>devise</a:Name><a:Code>devise</a:Code><a:DataType>VARCHAR(10)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>FCFA</a:DefaultValue></o:Column>
+                     <o:Column Id="C_PRM_SUP"><a:Name>superficie_totale</a:Name><a:Code>superficie_totale</a:Code><a:DataType>DECIMAL(10,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>En Hectares</a:Comment></o:Column>
+                     <o:Column Id="C_PRM_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_PRM_CRT"><a:Name>created_at</a:Name><a:Code>created_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_PRM_UPD"><a:Name>updated_at</a:Name><a:Code>updated_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_PRM"><a:Name>PK_PARAMS</a:Name><c:Key.Columns><o:Column Ref="C_PRM_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_EMP">
+                  <a:Name>Employe</a:Name>
+                  <a:Code>employes_employe</a:Code>
+                  <a:Comment>Employe de l exploitation agricole - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_EMP_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_EMP_USR"><a:Name>user_id</a:Name><a:Code>user_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory><a:Comment>FK optionnelle CustomUser OneToOne</a:Comment></o:Column>
+                     <o:Column Id="C_EMP_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_EMP_PRN"><a:Name>prenom</a:Name><a:Code>prenom</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_EMP_PST"><a:Name>poste</a:Name><a:Code>poste</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Chef de culture Ouvrier Tractoriste</a:Comment></o:Column>
+                     <o:Column Id="C_EMP_TEL"><a:Name>telephone</a:Name><a:Code>telephone</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_EMP_EML"><a:Name>email</a:Name><a:Code>email</a:Code><a:DataType>VARCHAR(254)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_EMP_SAL"><a:Name>salaire_mensuel</a:Name><a:Code>salaire_mensuel</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue></o:Column>
+                     <o:Column Id="C_EMP_DTE"><a:Name>date_embauche</a:Name><a:Code>date_embauche</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_EMP_STA"><a:Name>statut</a:Name><a:Code>statut</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>ACTIF</a:DefaultValue><a:Comment>ACTIF | INACTIF | CONGE</a:Comment></o:Column>
+                     <o:Column Id="C_EMP_NOT"><a:Name>notes</a:Name><a:Code>notes</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_EMP"><a:Name>PK_EMPLOYE</a:Name><c:Key.Columns><o:Column Ref="C_EMP_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_TCH">
+                  <a:Name>TacheEmploye</a:Name>
+                  <a:Code>employes_tacheemploye</a:Code>
+                  <a:Comment>Tache assignee a un employe - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_TCH_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_TCH_EMP"><a:Name>employe_id</a:Name><a:Code>employe_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TCH_TTR"><a:Name>titre</a:Name><a:Code>titre</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TCH_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_TCH_PRI"><a:Name>priorite</a:Name><a:Code>priorite</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>MOYENNE</a:DefaultValue><a:Comment>BASSE | MOYENNE | HAUTE | URGENTE</a:Comment></o:Column>
+                     <o:Column Id="C_TCH_STA"><a:Name>statut</a:Name><a:Code>statut</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>A_FAIRE</a:DefaultValue><a:Comment>A_FAIRE | EN_COURS | TERMINE | ANNULE</a:Comment></o:Column>
+                     <o:Column Id="C_TCH_DDB"><a:Name>date_debut</a:Name><a:Code>date_debut</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TCH_DEH"><a:Name>date_echeance</a:Name><a:Code>date_echeance</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TCH_USR"><a:Name>cree_par_id</a:Name><a:Code>cree_par_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_TCH"><a:Name>PK_TACHE</a:Name><c:Key.Columns><o:Column Ref="C_TCH_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_PTG">
+                  <a:Name>Pointage</a:Name>
+                  <a:Code>employes_pointage</a:Code>
+                  <a:Comment>Suivi de presence quotidienne - Schema tenant - UNIQUE(employe, date)</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_PTG_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_PTG_EMP"><a:Name>employe_id</a:Name><a:Code>employe_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_PTG_DAT"><a:Name>date</a:Name><a:Code>date</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_PTG_STA"><a:Name>statut</a:Name><a:Code>statut</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>PRESENT</a:DefaultValue><a:Comment>PRESENT | ABSENT | CONGE</a:Comment></o:Column>
+                     <o:Column Id="C_PTG_HRS"><a:Name>heures_travaillees</a:Name><a:Code>heures_travaillees</a:Code><a:DataType>DECIMAL(4,1)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>8.0</a:DefaultValue></o:Column>
+                     <o:Column Id="C_PTG_NOT"><a:Name>notes</a:Name><a:Code>notes</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_PTG"><a:Name>PK_POINTAGE</a:Name><c:Key.Columns><o:Column Ref="C_PTG_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_PAR">
+                  <a:Name>Parcelle</a:Name>
+                  <a:Code>cultures_parcelle</a:Code>
+                  <a:Comment>Parcelle de terrain agricole - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_PAR_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_PAR_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Parcelle Nord Champ A</a:Comment></o:Column>
+                     <o:Column Id="C_PAR_SUP"><a:Name>superficie</a:Name><a:Code>superficie</a:Code><a:DataType>DECIMAL(8,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>En Hectares</a:Comment></o:Column>
+                     <o:Column Id="C_PAR_SOL"><a:Name>type_sol</a:Name><a:Code>type_sol</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory><a:Comment>ex: Argileux Ferralitique</a:Comment></o:Column>
+                     <o:Column Id="C_PAR_LOC"><a:Name>localisation</a:Name><a:Code>localisation</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_PAR"><a:Name>PK_PARCELLE</a:Name><c:Key.Columns><o:Column Ref="C_PAR_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_CUL">
+                  <a:Name>Culture</a:Name>
+                  <a:Code>cultures_culture</a:Code>
+                  <a:Comment>Suivi de culture vegetale - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_CUL_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_CUL_PAR"><a:Name>parcelle_id</a:Name><a:Code>parcelle_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CUL_VAR"><a:Name>variete</a:Name><a:Code>variete</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Mais hybride Cacao Trinitario</a:Comment></o:Column>
+                     <o:Column Id="C_CUL_TYP"><a:Name>type_culture</a:Name><a:Code>type_culture</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>VIVRIERE</a:DefaultValue><a:Comment>VIVRIERE | RENTE | MARAICHERE</a:Comment></o:Column>
+                     <o:Column Id="C_CUL_DSM"><a:Name>date_semis</a:Name><a:Code>date_semis</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CUL_DRP"><a:Name>date_recolte_prevue</a:Name><a:Code>date_recolte_prevue</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_CUL_QSM"><a:Name>quantite_semee</a:Name><a:Code>quantite_semee</a:Code><a:DataType>DECIMAL(10,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>En kg ou Plants</a:Comment></o:Column>
+                     <o:Column Id="C_CUL_RND"><a:Name>rendement_estime</a:Name><a:Code>rendement_estime</a:Code><a:DataType>DECIMAL(10,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>En Tonnes ou kg</a:Comment></o:Column>
+                     <o:Column Id="C_CUL_STA"><a:Name>statut</a:Name><a:Code>statut</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>EN_CROISSANCE</a:DefaultValue><a:Comment>EN_CROISSANCE | RECOLTE_EN_COURS | TERMINEE | PERDUE</a:Comment></o:Column>
+                     <o:Column Id="C_CUL_NOT"><a:Name>notes</a:Name><a:Code>notes</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_CUL"><a:Name>PK_CULTURE</a:Name><c:Key.Columns><o:Column Ref="C_CUL_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_ELV">
+                  <a:Name>Elevage</a:Name>
+                  <a:Code>cultures_elevage</a:Code>
+                  <a:Comment>Suivi elevage animal - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_ELV_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_ELV_TYP"><a:Name>type_animaux</a:Name><a:Code>type_animaux</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Poulets Porcs Bovins</a:Comment></o:Column>
+                     <o:Column Id="C_ELV_NBT"><a:Name>nombre_tetes</a:Name><a:Code>nombre_tetes</a:Code><a:DataType>INTEGER</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0</a:DefaultValue></o:Column>
+                     <o:Column Id="C_ELV_DAC"><a:Name>date_acquisition</a:Name><a:Code>date_acquisition</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_ELV_BAT"><a:Name>batiment</a:Name><a:Code>batiment</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory><a:Comment>ex: Poulailler 1 Enclos B</a:Comment></o:Column>
+                     <o:Column Id="C_ELV_SSN"><a:Name>statut_sanitaire</a:Name><a:Code>statut_sanitaire</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>Bon</a:DefaultValue></o:Column>
+                     <o:Column Id="C_ELV_NOT"><a:Name>notes</a:Name><a:Code>notes</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_ELV"><a:Name>PK_ELEVAGE</a:Name><c:Key.Columns><o:Column Ref="C_ELV_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_ACT">
+                  <a:Name>ActiviteAgricole</a:Name>
+                  <a:Code>cultures_activiteagricole</a:Code>
+                  <a:Comment>Activite terrain desherbage semis recolte vaccination - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_ACT_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_ACT_CUL"><a:Name>culture_id</a:Name><a:Code>culture_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_ACT_ELV"><a:Name>elevage_id</a:Name><a:Code>elevage_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_ACT_EMP"><a:Name>employe_responsable_id</a:Name><a:Code>employe_responsable_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_ACT_TYP"><a:Name>type_activite</a:Name><a:Code>type_activite</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Desherbage Engrais Vaccination</a:Comment></o:Column>
+                     <o:Column Id="C_ACT_DAT"><a:Name>date_activite</a:Name><a:Code>date_activite</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_ACT_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_ACT_COT"><a:Name>cout_associe</a:Name><a:Code>cout_associe</a:Code><a:DataType>DECIMAL(10,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>Cout en FCFA</a:Comment></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_ACT"><a:Name>PK_ACTIVITE</a:Name><c:Key.Columns><o:Column Ref="C_ACT_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_CATS">
+                  <a:Name>CategorieStock</a:Name>
+                  <a:Code>stocks_categoriestock</a:Code>
+                  <a:Comment>Categorie article en stock - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_CATS_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_CATS_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CATS_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_CATS"><a:Name>PK_CATSTOCK</a:Name><c:Key.Columns><o:Column Ref="C_CATS_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_ART">
+                  <a:Name>ArticleStock</a:Name>
+                  <a:Code>stocks_articlestock</a:Code>
+                  <a:Comment>Article en stock intrant recolte equipement - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_ART_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_ART_CAT"><a:Name>categorie_id</a:Name><a:Code>categorie_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_ART_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_ART_TYP"><a:Name>type_article</a:Name><a:Code>type_article</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>INTRANT</a:DefaultValue><a:Comment>INTRANT | RECOLTE | EQUIPEMENT | ALIMENTATION | AUTRE</a:Comment></o:Column>
+                     <o:Column Id="C_ART_QTE"><a:Name>quantite_en_stock</a:Name><a:Code>quantite_en_stock</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue></o:Column>
+                     <o:Column Id="C_ART_SEU"><a:Name>seuil_alerte</a:Name><a:Code>seuil_alerte</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>10.0</a:DefaultValue></o:Column>
+                     <o:Column Id="C_ART_UNT"><a:Name>unite_mesure</a:Name><a:Code>unite_mesure</a:Code><a:DataType>VARCHAR(30)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>kg</a:DefaultValue></o:Column>
+                     <o:Column Id="C_ART_PRI"><a:Name>prix_unitaire_moyen</a:Name><a:Code>prix_unitaire_moyen</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>En FCFA</a:Comment></o:Column>
+                     <o:Column Id="C_ART_EMP"><a:Name>emplacement</a:Name><a:Code>emplacement</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_ART_CRT"><a:Name>created_at</a:Name><a:Code>created_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_ART_UPD"><a:Name>updated_at</a:Name><a:Code>updated_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_ART"><a:Name>PK_ARTICLE</a:Name><c:Key.Columns><o:Column Ref="C_ART_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_MVT">
+                  <a:Name>MouvementStock</a:Name>
+                  <a:Code>stocks_mouvementstock</a:Code>
+                  <a:Comment>Mouvement entree sortie de stock - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_MVT_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_MVT_ART"><a:Name>article_id</a:Name><a:Code>article_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_MVT_TYP"><a:Name>type_mouvement</a:Name><a:Code>type_mouvement</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>ENTREE</a:DefaultValue><a:Comment>ENTREE | SORTIE | PERTE</a:Comment></o:Column>
+                     <o:Column Id="C_MVT_QTE"><a:Name>quantite</a:Name><a:Code>quantite</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_MVT_PRT"><a:Name>prix_total</a:Name><a:Code>prix_total</a:Code><a:DataType>DECIMAL(12,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>0.0</a:DefaultValue><a:Comment>En FCFA</a:Comment></o:Column>
+                     <o:Column Id="C_MVT_MOT"><a:Name>motif</a:Name><a:Code>motif</a:Code><a:DataType>VARCHAR(255)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_MVT_DAT"><a:Name>date_mouvement</a:Name><a:Code>date_mouvement</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_MVT_USR"><a:Name>effectue_par_id</a:Name><a:Code>effectue_par_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_MVT"><a:Name>PK_MOUVEMENT</a:Name><c:Key.Columns><o:Column Ref="C_MVT_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_CATT">
+                  <a:Name>CategorieTransaction</a:Name>
+                  <a:Code>finances_categorietransaction</a:Code>
+                  <a:Comment>Categorie de transaction financiere - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_CATT_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_CATT_NOM"><a:Name>nom</a:Name><a:Code>nom</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_CATT_TYP"><a:Name>type_categorie</a:Name><a:Code>type_categorie</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>DEPENSE</a:DefaultValue><a:Comment>RECETTE | DEPENSE</a:Comment></o:Column>
+                     <o:Column Id="C_CATT_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_CATT"><a:Name>PK_CATTRANS</a:Name><c:Key.Columns><o:Column Ref="C_CATT_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_TRX">
+                  <a:Name>Transaction</a:Name>
+                  <a:Code>finances_transaction</a:Code>
+                  <a:Comment>Transaction financiere vente achat depense revenu - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_TRX_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_TRX_CAT"><a:Name>categorie_id</a:Name><a:Code>categorie_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_TYP"><a:Name>type_transaction</a:Name><a:Code>type_transaction</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>VENTE</a:DefaultValue><a:Comment>VENTE | ACHAT | DEPENSE | REVENU</a:Comment></o:Column>
+                     <o:Column Id="C_TRX_MNT"><a:Name>montant</a:Name><a:Code>montant</a:Code><a:DataType>DECIMAL(14,2)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>Montant en FCFA</a:Comment></o:Column>
+                     <o:Column Id="C_TRX_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>VARCHAR(255)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_DAT"><a:Name>date_transaction</a:Name><a:Code>date_transaction</a:Code><a:DataType>DATE</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_MPY"><a:Name>mode_paiement</a:Name><a:Code>mode_paiement</a:Code><a:DataType>VARCHAR(50)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>CASH</a:DefaultValue><a:Comment>CASH | MOBILE_MONEY | VIREMENT | CHEQUE</a:Comment></o:Column>
+                     <o:Column Id="C_TRX_REF"><a:Name>reference_recu</a:Name><a:Code>reference_recu</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_JPH"><a:Name>justificatif_photo</a:Name><a:Code>justificatif_photo</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_USR"><a:Name>cree_par_id</a:Name><a:Code>cree_par_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_TRX_CRT"><a:Name>created_at</a:Name><a:Code>created_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_TRX"><a:Name>PK_TRANSACTION</a:Name><c:Key.Columns><o:Column Ref="C_TRX_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_LOG">
+                  <a:Name>AuditLog</a:Name>
+                  <a:Code>tracabilite_auditlog</a:Code>
+                  <a:Comment>Journal tracabilite immutable actions utilisateurs - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_LOG_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_LOG_USR"><a:Name>utilisateur_id</a:Name><a:Code>utilisateur_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_LOG_NOM"><a:Name>nom_utilisateur</a:Name><a:Code>nom_utilisateur</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>0</a:Mandatory><a:Comment>Snapshot nom au moment de l action</a:Comment></o:Column>
+                     <o:Column Id="C_LOG_ROL"><a:Name>role_utilisateur</a:Name><a:Code>role_utilisateur</a:Code><a:DataType>VARCHAR(50)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_LOG_ACT"><a:Name>type_action</a:Name><a:Code>type_action</a:Code><a:DataType>VARCHAR(20)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>CREATION</a:DefaultValue><a:Comment>CREATION | MODIFICATION | SUPPRESSION | CONNEXION | EXPORT</a:Comment></o:Column>
+                     <o:Column Id="C_LOG_MOD"><a:Name>module</a:Name><a:Code>module</a:Code><a:DataType>VARCHAR(100)</a:DataType><a:Mandatory>1</a:Mandatory><a:Comment>ex: Stocks Cultures Employes Finances</a:Comment></o:Column>
+                     <o:Column Id="C_LOG_DSC"><a:Name>description</a:Name><a:Code>description</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_LOG_IP"><a:Name>ip_address</a:Name><a:Code>ip_address</a:Code><a:DataType>VARCHAR(45)</a:DataType><a:Mandatory>0</a:Mandatory></o:Column>
+                     <o:Column Id="C_LOG_CRT"><a:Name>created_at</a:Name><a:Code>created_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_LOG"><a:Name>PK_AUDITLOG</a:Name><c:Key.Columns><o:Column Ref="C_LOG_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+               <o:Table Id="T_NOT">
+                  <a:Name>Notification</a:Name>
+                  <a:Code>tracabilite_notification</a:Code>
+                  <a:Comment>Notifications in-app pour l utilisateur - Schema tenant</a:Comment>
+                  <c:Columns>
+                     <o:Column Id="C_NOT_ID"><a:Name>id</a:Name><a:Code>id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory><a:Identity>1</a:Identity></o:Column>
+                     <o:Column Id="C_NOT_USR"><a:Name>utilisateur_id</a:Name><a:Code>utilisateur_id</a:Code><a:DataType>BIGINT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_NOT_TTR"><a:Name>titre</a:Name><a:Code>titre</a:Code><a:DataType>VARCHAR(150)</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_NOT_MSG"><a:Name>message</a:Name><a:Code>message</a:Code><a:DataType>TEXT</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                     <o:Column Id="C_NOT_TYP"><a:Name>type_notif</a:Name><a:Code>type_notif</a:Code><a:DataType>VARCHAR(50)</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>INFO</a:DefaultValue><a:Comment>INFO | ALERTE | TACHE | STOCK</a:Comment></o:Column>
+                     <o:Column Id="C_NOT_LU"><a:Name>est_lu</a:Name><a:Code>est_lu</a:Code><a:DataType>BOOLEAN</a:DataType><a:Mandatory>1</a:Mandatory><a:DefaultValue>FALSE</a:DefaultValue></o:Column>
+                     <o:Column Id="C_NOT_CRT"><a:Name>created_at</a:Name><a:Code>created_at</a:Code><a:DataType>TIMESTAMP</a:DataType><a:Mandatory>1</a:Mandatory></o:Column>
+                  </c:Columns>
+                  <c:PrimaryKey><o:Key Id="PK_NOT"><a:Name>PK_NOTIF</a:Name><c:Key.Columns><o:Column Ref="C_NOT_ID"/></c:Key.Columns></o:Key></c:PrimaryKey>
+               </o:Table>
+
+            </c:Tables>
+
+            <c:References>
+               <o:Reference Id="R_DOM_CLI"><a:Name>FK_Domain_Client</a:Name><a:Code>FK_Domain_Client</a:Code><a:Comment>Un Client possede plusieurs Domaines</a:Comment><c:ParentTable><o:Table Ref="T_CLIENT"/></c:ParentTable><c:ChildTable><o:Table Ref="T_DOMAIN"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_CLI_ID"/></c:Object1><c:Object2><o:Column Ref="C_DOM_TEN"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_EMP_USR"><a:Name>FK_Employe_User</a:Name><a:Code>FK_Employe_User</a:Code><a:Comment>Employe optionnellement lie a un compte utilisateur OneToOne</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_EMP"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_EMP_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_TCH_EMP"><a:Name>FK_Tache_Employe</a:Name><a:Code>FK_Tache_Employe</a:Code><a:Comment>Tache assignee a un employe</a:Comment><c:ParentTable><o:Table Ref="T_EMP"/></c:ParentTable><c:ChildTable><o:Table Ref="T_TCH"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_EMP_ID"/></c:Object1><c:Object2><o:Column Ref="C_TCH_EMP"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_TCH_USR"><a:Name>FK_Tache_User</a:Name><a:Code>FK_Tache_User</a:Code><a:Comment>Tache creee par un utilisateur</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_TCH"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_TCH_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_PTG_EMP"><a:Name>FK_Pointage_Employe</a:Name><a:Code>FK_Pointage_Employe</a:Code><a:Comment>Pointage quotidien d un employe</a:Comment><c:ParentTable><o:Table Ref="T_EMP"/></c:ParentTable><c:ChildTable><o:Table Ref="T_PTG"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_EMP_ID"/></c:Object1><c:Object2><o:Column Ref="C_PTG_EMP"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_CUL_PAR"><a:Name>FK_Culture_Parcelle</a:Name><a:Code>FK_Culture_Parcelle</a:Code><a:Comment>Culture plantee sur une parcelle</a:Comment><c:ParentTable><o:Table Ref="T_PAR"/></c:ParentTable><c:ChildTable><o:Table Ref="T_CUL"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_PAR_ID"/></c:Object1><c:Object2><o:Column Ref="C_CUL_PAR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_ACT_CUL"><a:Name>FK_Activite_Culture</a:Name><a:Code>FK_Activite_Culture</a:Code><a:Comment>Activite liee a une culture optionnel</a:Comment><c:ParentTable><o:Table Ref="T_CUL"/></c:ParentTable><c:ChildTable><o:Table Ref="T_ACT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_CUL_ID"/></c:Object1><c:Object2><o:Column Ref="C_ACT_CUL"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_ACT_ELV"><a:Name>FK_Activite_Elevage</a:Name><a:Code>FK_Activite_Elevage</a:Code><a:Comment>Activite liee a un elevage optionnel</a:Comment><c:ParentTable><o:Table Ref="T_ELV"/></c:ParentTable><c:ChildTable><o:Table Ref="T_ACT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_ELV_ID"/></c:Object1><c:Object2><o:Column Ref="C_ACT_ELV"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_ACT_EMP"><a:Name>FK_Activite_Employe</a:Name><a:Code>FK_Activite_Employe</a:Code><a:Comment>Responsable de l activite</a:Comment><c:ParentTable><o:Table Ref="T_EMP"/></c:ParentTable><c:ChildTable><o:Table Ref="T_ACT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_EMP_ID"/></c:Object1><c:Object2><o:Column Ref="C_ACT_EMP"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_ART_CAT"><a:Name>FK_Article_Categorie</a:Name><a:Code>FK_Article_Categorie</a:Code><a:Comment>Article appartient a une categorie de stock</a:Comment><c:ParentTable><o:Table Ref="T_CATS"/></c:ParentTable><c:ChildTable><o:Table Ref="T_ART"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_CATS_ID"/></c:Object1><c:Object2><o:Column Ref="C_ART_CAT"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_MVT_ART"><a:Name>FK_Mouvement_Article</a:Name><a:Code>FK_Mouvement_Article</a:Code><a:Comment>Mouvement de stock sur un article</a:Comment><c:ParentTable><o:Table Ref="T_ART"/></c:ParentTable><c:ChildTable><o:Table Ref="T_MVT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_ART_ID"/></c:Object1><c:Object2><o:Column Ref="C_MVT_ART"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_MVT_USR"><a:Name>FK_Mouvement_User</a:Name><a:Code>FK_Mouvement_User</a:Code><a:Comment>Utilisateur ayant effectue le mouvement</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_MVT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_MVT_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_TRX_CAT"><a:Name>FK_Transaction_Categorie</a:Name><a:Code>FK_Transaction_Categorie</a:Code><a:Comment>Transaction liee a une categorie financiere</a:Comment><c:ParentTable><o:Table Ref="T_CATT"/></c:ParentTable><c:ChildTable><o:Table Ref="T_TRX"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_CATT_ID"/></c:Object1><c:Object2><o:Column Ref="C_TRX_CAT"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_TRX_USR"><a:Name>FK_Transaction_User</a:Name><a:Code>FK_Transaction_User</a:Code><a:Comment>Transaction creee par un utilisateur</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_TRX"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_TRX_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_LOG_USR"><a:Name>FK_AuditLog_User</a:Name><a:Code>FK_AuditLog_User</a:Code><a:Comment>Log tracabilite associe a un utilisateur</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_LOG"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_LOG_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+               <o:Reference Id="R_NOT_USR"><a:Name>FK_Notification_User</a:Name><a:Code>FK_Notification_User</a:Code><a:Comment>Notification destinee a un utilisateur</a:Comment><c:ParentTable><o:Table Ref="T_USER"/></c:ParentTable><c:ChildTable><o:Table Ref="T_NOT"/></c:ChildTable><c:Joins><o:ReferenceJoin><c:Object1><o:Column Ref="C_USR_ID"/></c:Object1><c:Object2><o:Column Ref="C_NOT_USR"/></c:Object2></o:ReferenceJoin></c:Joins></o:Reference>
+            </c:References>
+
+         </o:Model>
+      </c:Children>
+   </o:RootObject>
+</Model>
+"""
+
+output_path = r"C:\Users\USER\Desktop\stage2026\monapp\AgriSuivi_ClassDiagram.pdm"
+
+with open(output_path, 'w', encoding='utf-8') as f:
+    f.write(PDM_CONTENT.strip())
+
+print(f"[OK] Fichier PDM genere : {output_path}")
+print(f"     Taille : {len(PDM_CONTENT)} caracteres")
+print()
+print("Pour ouvrir dans PowerAMC (SAP PowerDesigner) :")
+print("  Fichier > Ouvrir > Selectionner AgriSuivi_ClassDiagram.pdm")
+print("  Type de fichier : Physical Data Model (*.pdm)")

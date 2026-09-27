@@ -69,27 +69,7 @@ function EmployeDashboard() {
           </div>
         </motion.div>
 
-        <motion.div
-          className="employe-card premium-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          onClick={() => navigate("/tracabilite")}
-        >
-          <div className="emp-card-header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
-             <div className="emp-avatar" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>
-                <FaClipboardList />
-             </div>
-          </div>
-          <div className="emp-card-body" style={{ paddingTop: '16px' }}>
-            <h3>Traçabilité</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Voir l'historique complet des actions sur l'exploitation.</p>
-          </div>
-          <div className="emp-card-footer">
-            <span>Voir l'historique</span>
-            <FaChevronRight />
-          </div>
-        </motion.div>
+
       </div>
     </div>
   );

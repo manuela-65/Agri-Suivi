@@ -10,16 +10,22 @@ import Dashboard from "./Pages/Dashboard";
 import Exploitations from "./Pages/Exploitations";
 import DetailExploitation from "./Pages/DetailExploitation";
 import Employes from "./Pages/employes";
-import Stocks from "./Pages/stocks";
 import Transactions from "./Pages/transactions";
-import Cultures from "./Pages/Cultures";
 import Rapports from "./Pages/Rapports";
 import Tracabilite from "./Pages/Tracabilite";
-import Parametres from "./Pages/Parametres";
 import DetailEmploye from "./Pages/DetailEmploye";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
+import Profile from "./Pages/Profile";
+import AdminDashboard from "./Pages/SuperAdmin/AdminDashboard";
+import Settings from './Pages/Settings/Settings';
+import Team from './Pages/Team/Team';
+import Cultures from './Pages/Cultures/Cultures';
+import Elevage from './Pages/Elevage/Elevage';
+import Stocks from './Pages/Stocks/Stocks';
+import AssistantIA from './Pages/AssistantIA';
 
 
 // Pages employé
@@ -59,6 +65,16 @@ function App() {
 />
 
 <Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>
+
+<Route
+  path="/reset-password"
+  element={<ResetPassword />}
+/>
+
+<Route
   path="/employe/:id"
   element={<DetailEmploye />}
 />
@@ -72,6 +88,52 @@ function App() {
         {/* =====================
             PAGES PROTEGEES (App)
         ====================== */}
+        {/* Routes avec Layout pour les tenants */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={
+            <ProtectedRoute requiredRole="EMPLOYE">
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/parametres" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <Settings />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/employes" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <Team />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/cultures" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <Cultures />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/elevage" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <Elevage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/stocks" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <Stocks />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/assistant-ia" element={
+            <ProtectedRoute requiredRole="PROPRIETAIRE">
+              <AssistantIA />
+            </ProtectedRoute>
+          } />
+
+        </Route>
+        
         <Route
           element={
             <ProtectedRoute>
@@ -83,11 +145,18 @@ function App() {
 
 
           <Route
-
             path="/dashboard"
-
             element={<Dashboard />}
+          />
 
+          <Route
+            path="/profile"
+            element={<Profile />}
+          />
+
+          <Route
+            path="/super-admin"
+            element={<AdminDashboard />}
           />
 
 
@@ -185,24 +254,12 @@ function App() {
 
 
           <Route
-
             path="/tracabilite"
-
-            element={<Tracabilite />}
-
-          />
-
-
-
-
-
-
-          <Route
-
-            path="/parametres"
-
-            element={<Parametres />}
-
+            element={
+              <ProtectedRoute allowedRoles={["PROPRIETAIRE"]}>
+                <Tracabilite />
+              </ProtectedRoute>
+            }
           />
 
 

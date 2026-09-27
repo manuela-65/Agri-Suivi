@@ -37,6 +37,7 @@ function Register() {
     telephone: "",
     password: "",
     confirmation: "",
+    type_exploitation: "CULTURES",
   });
 
   const handleChange = (e) => {
@@ -87,6 +88,7 @@ function Register() {
         email: formData.email,
         password: formData.password,
         phone: formData.telephone,
+        type_exploitation: formData.type_exploitation,
       });
 
       toast.success(
@@ -369,6 +371,21 @@ function Register() {
                 Identifiant de connexion : <strong>{formData.schema_name}</strong>
               </p>
             )}
+
+            <div className="input-group">
+              <FaLeaf />
+              <select
+                name="type_exploitation"
+                value={formData.type_exploitation}
+                onChange={handleChange}
+                required
+                style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "#333", padding: "10px" }}
+              >
+                <option value="CULTURES">Cultures / Végétal</option>
+                <option value="ELEVAGE">Élevage / Animal</option>
+                <option value="MIXTE">Cultures et Élevage</option>
+              </select>
+            </div>
 
 
 
