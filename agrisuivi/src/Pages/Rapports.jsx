@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   FaFilePdf,
+  FaFileExcel,
   FaChartLine,
   FaCalendarAlt,
   FaFilter,
@@ -242,18 +243,36 @@ function Rapports() {
 
     return (
         <div className="premium-rapports">
-            {/* HERO */}
-            <motion.div 
-                className="page-hero"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-            >
-                <div className="page-hero-content">
+            {/* 1. COMPACT HEADER WITH INSTANT EXPORT BUTTONS */}
+            <div className="page-header-compact">
+                <div className="page-header-compact-title">
                     <h1>Rapports & Statistiques</h1>
-                    <p>Analysez les performances globales de votre exploitation.</p>
+                    <p>Analysez les performances et générez vos exports PDF / Excel.</p>
                 </div>
-            </motion.div>
+                <div className="page-header-compact-actions">
+                    <button 
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={genererRapportExcel}
+                        title="Exporter la période en fichier Excel"
+                    >
+                        <FaFileExcel /> Exporter Excel
+                    </button>
+                    <button 
+                        type="button"
+                        className={`btn btn-primary btn-sm ${isGenerating ? 'generating' : ''}`}
+                        onClick={genererRapportPDF}
+                        disabled={isGenerating}
+                        title="Générer et télécharger le rapport complet en PDF"
+                    >
+                        {isGenerating ? (
+                            <><FaSpinner className="spin" /> Génération...</>
+                        ) : (
+                            <><FaFilePdf /> Télécharger PDF</>
+                        )}
+                    </button>
+                </div>
+            </div>
 
             {loadingData ? (
                 <div className="loading-state">
@@ -262,39 +281,65 @@ function Rapports() {
                 </div>
             ) : (
                 <div className="rapports-content">
-                    {/* FILTERS */}
+                    {/* 2. UNIFIED COMPACT FILTERS TOOLBAR */}
                     <motion.div 
-                        className="premium-card filters-section"
-                        initial={{ opacity: 0, y: 20 }}
+                        className="rapports-filter-toolbar premium-card"
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <div className="filters-header">
-                            <h2><FaCalendarAlt /> Période d'analyse</h2>
-                            <p>Sélectionnez la période pour laquelle vous souhaitez générer le rapport.</p>
-                        </div>
-                        
-                        <div className="period-presets">
-                            <button className={`preset-btn ${activePeriod === 'jour' ? 'active' : ''}`} onClick={() => filtrerPeriode("jour")}>Aujourd'hui</button>
-                            <button className={`preset-btn ${activePeriod === 'semaine' ? 'active' : ''}`} onClick={() => filtrerPeriode("semaine")}>Cette semaine</button>
-                            <button className={`preset-btn ${activePeriod === 'mois' ? 'active' : ''}`} onClick={() => filtrerPeriode("mois")}>Ce mois</button>
-                            <button className={`preset-btn ${activePeriod === 'annee' ? 'active' : ''}`} onClick={() => filtrerPeriode("annee")}>Cette année</button>
+                        <div className="filter-toolbar-left">
+                            <span className="filter-toolbar-label">
+                                <FaCalendarAlt /> Période :
+                            </span>
+                            <div className="period-presets-compact">
+                                <button 
+                                    type="button"
+                                    className={`preset-btn-compact ${activePeriod === 'jour' ? 'active' : ''}`} 
+                                    onClick={() => filtrerPeriode("jour")}
+                                >
+                                    Aujourd'hui
+                                </button>
+                                <button 
+                                    type="button"
+                                    className={`preset-btn-compact ${activePeriod === 'semaine' ? 'active' : ''}`} 
+                                    onClick={() => filtrerPeriode("semaine")}
+                                >
+                                    Cette semaine
+                                </button>
+                                <button 
+                                    type="button"
+                                    className={`preset-btn-compact ${activePeriod === 'mois' ? 'active' : ''}`} 
+                                    onClick={() => filtrerPeriode("mois")}
+                                >
+                                    Ce mois
+                                </button>
+                                <button 
+                                    type="button"
+                                    className={`preset-btn-compact ${activePeriod === 'annee' ? 'active' : ''}`} 
+                                    onClick={() => filtrerPeriode("annee")}
+                                >
+                                    Cette année
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="custom-date-range">
-                            <div className="date-input-group">
-                                <label>Date de début</label>
+                        <div className="filter-toolbar-divider" />
+
+                        <div className="filter-toolbar-right">
+                            <div className="date-input-inline">
+                                <label>Du :</label>
                                 <input
-                                    className="premium-input"
+                                    className="date-input-compact"
                                     type="date"
                                     value={dateDebut}
                                     max={new Date().toISOString().split("T")[0]}
                                     onChange={(e) => { setDateDebut(e.target.value); setActivePeriod(null); }}
                                 />
                             </div>
-                            <div className="date-input-group">
-                                <label>Date de fin</label>
+                            <div className="date-input-inline">
+                                <label>Au :</label>
                                 <input
-                                    className="premium-input"
+                                    className="date-input-compact"
                                     type="date"
                                     value={dateFin}
                                     max={new Date().toISOString().split("T")[0]}
@@ -302,61 +347,103 @@ function Rapports() {
                                 />
                             </div>
                         </div>
-                        {erreurDate && <p className="error-message">{erreurDate}</p>}
                     </motion.div>
+                    {erreurDate && <p className="error-message">{erreurDate}</p>}
 
-                    {/* PREVIEW */}
+                    {/* 3. PERFORMANCE PREVIEW & SUMMARY */}
                     <AnimatePresence mode="wait">
                         {dateDebut && dateFin && (
                             <motion.div 
-                                className="premium-card preview-section"
-                                initial={{ opacity: 0, y: 20 }}
+                                className="preview-container"
+                                initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                exit={{ opacity: 0, y: -15 }}
                             >
-                                <div className="preview-header">
-                                    <h2><FaChartLine /> Aperçu des performances</h2>
-                                </div>
-                                
-                                <div className="preview-stats">
-                                    <div className="preview-stat-card">
-                                        <span className="stat-label">Entrées Totales</span>
-                                        <h3 className="stat-value text-success">{statsGlobales.recettes.toLocaleString()} FCFA</h3>
+                                <div className="preview-stats-row">
+                                    <div className="stat-card-compact bg-success-soft">
+                                        <span className="stat-label">Recettes / Entrées</span>
+                                        <h3 className="stat-val text-success">{statsGlobales.recettes.toLocaleString()} FCFA</h3>
+                                        <span className="stat-sub">Sur la période filtrée</span>
                                     </div>
-                                    <div className="preview-stat-card">
-                                        <span className="stat-label">Sorties Totales</span>
-                                        <h3 className="stat-value text-danger">{statsGlobales.depenses.toLocaleString()} FCFA</h3>
+                                    <div className="stat-card-compact bg-danger-soft">
+                                        <span className="stat-label">Dépenses / Sorties</span>
+                                        <h3 className="stat-val text-danger">{statsGlobales.depenses.toLocaleString()} FCFA</h3>
+                                        <span className="stat-sub">Achats & charges</span>
                                     </div>
-                                    <div className={`preview-stat-card ${statsGlobales.benefice >= 0 ? 'bg-primary-light' : 'bg-danger-light'}`}>
-                                        <span className="stat-label">Solde Net</span>
-                                        <h3 className={`stat-value ${statsGlobales.benefice >= 0 ? 'text-primary' : 'text-danger'}`}>
+                                    <div className={`stat-card-compact ${statsGlobales.benefice >= 0 ? 'bg-primary-soft' : 'bg-danger-soft'}`}>
+                                        <span className="stat-label">Solde Net d'Exploitation</span>
+                                        <h3 className={`stat-val ${statsGlobales.benefice >= 0 ? 'text-primary' : 'text-danger'}`}>
                                             {statsGlobales.benefice.toLocaleString()} FCFA
                                         </h3>
+                                        <span className="stat-sub">{statsGlobales.benefice >= 0 ? 'Bénéfice net' : 'Déficit sur la période'}</span>
                                     </div>
                                 </div>
 
-                                <div className="preview-info">
-                                    <p><strong>{statsGlobales.nbTransactions}</strong> transactions ont été enregistrées au cours de cette période.</p>
-                                </div>
+                                {/* Transactions summary table before export */}
+                                <div className="premium-card preview-table-card">
+                                    <div className="preview-table-header">
+                                        <div>
+                                            <h3><FaChartLine /> Transactions de la période</h3>
+                                            <p>{statsGlobales.nbTransactions} transaction(s) incluse(s) dans le rapport ({new Date(dateDebut).toLocaleDateString('fr-FR')} - {new Date(dateFin).toLocaleDateString('fr-FR')})</p>
+                                        </div>
+                                        <div className="preview-export-quick">
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={genererRapportExcel}
+                                            >
+                                                Excel
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-primary btn-sm"
+                                                onClick={genererRapportPDF}
+                                                disabled={isGenerating}
+                                            >
+                                                {isGenerating ? "PDF en cours..." : "Télécharger PDF"}
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                <div className="generate-wrapper" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                                    <button 
-                                        className={`btn btn-primary btn-large generate-btn ${isGenerating ? 'generating' : ''}`}
-                                        onClick={genererRapportPDF}
-                                        disabled={isGenerating}
-                                    >
-                                        {isGenerating ? (
-                                            <><FaSpinner className="spin" /> Génération en cours...</>
-                                        ) : (
-                                            <><FaFilePdf /> Télécharger PDF</>
-                                        )}
-                                    </button>
-                                    <button 
-                                        className="btn btn-secondary btn-large generate-btn"
-                                        onClick={genererRapportExcel}
-                                    >
-                                        Télécharger Excel
-                                    </button>
+                                    {transactionsFiltrees.length === 0 ? (
+                                        <div className="empty-state py-8">
+                                            Aucune transaction trouvée sur cette plage de dates.
+                                        </div>
+                                    ) : (
+                                        <div className="table-responsive">
+                                            <table className="preview-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Type</th>
+                                                        <th>Description</th>
+                                                        <th style={{ textAlign: 'right' }}>Montant</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {transactionsFiltrees.slice(0, 10).map((t, idx) => (
+                                                        <tr key={t.id || idx}>
+                                                            <td>{new Date(t.date_transaction).toLocaleDateString('fr-FR')}</td>
+                                                            <td>
+                                                                <span className={`transaction-type-badge ${['VENTE', 'REVENU'].includes(t.type_transaction) ? 'type-in' : 'type-out'}`}>
+                                                                    {t.type_transaction}
+                                                                </span>
+                                                            </td>
+                                                            <td>{t.description || '-'}</td>
+                                                            <td style={{ textAlign: 'right', fontWeight: '700' }} className={['VENTE', 'REVENU'].includes(t.type_transaction) ? 'text-success' : 'text-danger'}>
+                                                                {['VENTE', 'REVENU'].includes(t.type_transaction) ? '+' : '-'}{parseFloat(t.montant).toLocaleString()} FCFA
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            {transactionsFiltrees.length > 10 && (
+                                                <div className="table-more-hint">
+                                                    ... et {transactionsFiltrees.length - 10} autre(s) transaction(s) dans le fichier exporté.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}

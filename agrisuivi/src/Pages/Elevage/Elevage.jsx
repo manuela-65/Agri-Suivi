@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { CultureService, EmployesService } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
-import { FaTractor, FaClipboardList, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaTractor, FaClipboardList, FaPlus, FaTrash, FaSearch, FaTimes, FaVideo, FaFolderOpen } from 'react-icons/fa';
 import './Elevage.css';
 
 export default function Elevage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('elevage');
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSanitaire, setFilterSanitaire] = useState("ALL");
   const [data, setData] = useState({
     elevages: [],
     activites: [],
@@ -36,17 +38,22 @@ export default function Elevage() {
     try {
       if (activeTab === 'elevage') {
         const res = await CultureService.getElevages();
-        setData(prev => ({ ...prev, elevages: res }));
+        setData(prev => ({ ...prev, elevages: Array.isArray(res) ? res : [] }));
       } else if (activeTab === 'activites') {
-        const [resActivites, resElevages, resEmployes] = await Promise.all([
+        const [resActivites, resElevages, resEmployes] = await Promise.allSettled([
           CultureService.getActivites(),
           CultureService.getElevages(),
-          EmployesService.getAll()
+          EmployesService?.getAll ? EmployesService.getAll() : Promise.resolve([])
         ]);
-        setData(prev => ({ ...prev, activites: resActivites, elevages: resElevages, employes: resEmployes }));
+        setData(prev => ({
+          ...prev,
+          activites: resActivites.status === 'fulfilled' && Array.isArray(resActivites.value) ? resActivites.value : [],
+          elevages: resElevages.status === 'fulfilled' && Array.isArray(resElevages.value) ? resElevages.value : [],
+          employes: resEmployes.status === 'fulfilled' && Array.isArray(resEmployes.value) ? resEmployes.value : []
+        }));
       }
     } catch (error) {
-      toast.error("Erreur de chargement des données.");
+      console.warn("Info chargement elevage:", error);
     } finally {
       setLoading(false);
     }
@@ -240,44 +247,107 @@ export default function Elevage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === 'elevage' && (
-                <div className="tab-pane">
-                  <div className="pane-header">
-                    <h2>Cheptels et Élevage</h2>
-                    <button className="btn-add" onClick={() => handleOpenModal('elevage')}>
-                      <FaPlus /> Nouveau Troupeau
-                    </button>
-                  </div>
-                  <div className="table-responsive">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Type d'animaux</th>
-                          <th>Nombre</th>
-                          <th>Bâtiment / Enclos</th>
-                          <th>État Sanitaire</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.elevages.length === 0 ? (
-                          <tr><td colSpan="5" className="text-center">Aucun élevage enregistré.</td></tr>
-                        ) : data.elevages.map(e => (
-                          <tr key={e.id}>
-                            <td className="font-semibold">{e.type_animaux}</td>
-                            <td>{e.nombre_tetes} têtes</td>
-                            <td>{e.batiment || '-'}</td>
-                            <td>{e.statut_sanitaire}</td>
-                            <td className="actions-cell">
-                              <button className="btn-icon delete" onClick={() => handleDelete(e.id, 'elevage')}><FaTrash /></button>
-                            </td>
+              {activeTab === 'elevage' && (() => {
+                const filteredElevages = (data.elevages || []).filter(e => {
+                  const q = searchQuery.toLowerCase();
+                  const matchesSearch = !q || 
+                    (e.type_animaux || '').toLowerCase().includes(q) || 
+                    (e.batiment || '').toLowerCase().includes(q);
+                  const matchesSanitaire = filterSanitaire === 'ALL' || e.statut_sanitaire === filterSanitaire;
+                  return matchesSearch && matchesSanitaire;
+                });
+
+                return (
+                  <div className="tab-pane">
+                    <div className="pane-header">
+                      <h2>Cheptels et Élevage ({data.elevages.length})</h2>
+                      <button className="btn-add" onClick={() => handleOpenModal('elevage')}>
+                        <FaPlus /> Nouveau Troupeau
+                      </button>
+                    </div>
+
+                    {/* ELEVAGE TOOLBAR */}
+                    <div className="toolbar-container" style={{ marginBottom: '12px' }}>
+                      <div className="search-box">
+                        <FaSearch className="search-icon" />
+                        <input
+                          className="search-input"
+                          placeholder="Rechercher un animal, bâtiment..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                          <button className="search-clear-btn" onClick={() => setSearchQuery("")} title="Effacer">
+                            <FaTimes />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="type-filters">
+                        <button 
+                          className={`type-filter-btn ${filterSanitaire === 'ALL' ? 'active' : ''}`}
+                          onClick={() => setFilterSanitaire('ALL')}
+                        >
+                          Tous <span className="filter-count">{data.elevages.length}</span>
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterSanitaire === 'Bon' ? 'active' : ''}`}
+                          onClick={() => setFilterSanitaire('Bon')}
+                        >
+                          Bon
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterSanitaire === 'À surveiller' ? 'active' : ''}`}
+                          onClick={() => setFilterSanitaire('À surveiller')}
+                        >
+                          À surveiller
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterSanitaire === 'Traitement en cours' ? 'active' : ''}`}
+                          onClick={() => setFilterSanitaire('Traitement en cours')}
+                        >
+                          En traitement
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="table-responsive">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Type d'animaux</th>
+                            <th>Nombre</th>
+                            <th>Bâtiment / Enclos</th>
+                            <th>État Sanitaire</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {filteredElevages.length === 0 ? (
+                            <tr><td colSpan="5" className="text-center py-6 text-gray-500">
+                              {searchQuery ? "Aucun animal ne correspond à votre recherche." : "Aucun élevage enregistré."}
+                            </td></tr>
+                          ) : filteredElevages.map(e => (
+                            <tr key={e.id}>
+                              <td className="font-semibold">{e.type_animaux}</td>
+                              <td>{e.nombre_tetes} têtes</td>
+                              <td>{e.batiment || '-'}</td>
+                              <td>
+                                <span className={`badge-pill ${e.statut_sanitaire === 'Bon' ? 'badge-success' : 'badge-warning'}`}>
+                                  {e.statut_sanitaire}
+                                </span>
+                              </td>
+                              <td className="actions-cell">
+                                <button className="btn-icon delete" onClick={() => handleDelete(e.id, 'elevage')} title="Supprimer"><FaTrash /></button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {activeTab === 'activites' && (
                 <div className="tab-pane">
@@ -328,10 +398,15 @@ export default function Elevage() {
         {isModalOpen && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="modal-content" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}>
-              <h2>
-                {modalType === 'elevage' && 'Nouveau Troupeau'}
-                {modalType === 'activite' && 'Déclarer un soin / activité'}
-              </h2>
+              <div className="modal-header">
+                <h2>
+                  {modalType === 'elevage' && 'Nouveau Troupeau'}
+                  {modalType === 'activite' && 'Déclarer un soin / activité'}
+                </h2>
+                <button type="button" className="close-modal-btn" onClick={() => setIsModalOpen(false)} title="Fermer">
+                  <FaTimes />
+                </button>
+              </div>
               
               <form onSubmit={handleSubmit} className="generic-form">
                 
@@ -410,16 +485,25 @@ export default function Elevage() {
                       <input type="number" name="cout_associe" min="0" defaultValue="0" onChange={handleChange} />
                     </div>
 
-                    <div className="form-group">
-                      <label>Preuve vidéo</label>
+                    <div className="form-group proof-upload-group">
+                      <label>Preuve vidéo certifiée (Optionnel)</label>
+                      <div className="proof-buttons-row">
+                        <button 
+                          type="button" 
+                          className={`btn-media-action ${isRecordingVideo ? 'recording' : ''}`}
+                          onClick={openVideoCamera}
+                        >
+                          <FaVideo /> {isRecordingVideo ? "Arrêter l'enregistrement" : "Ouvrir la caméra"}
+                        </button>
 
-                      <button type="button" onClick={openVideoCamera}>
-                        {isRecordingVideo ? '🛑 Arrêter l\'enregistrement' : '🎥 Ouvrir la caméra'}
-                      </button>
-
-                      <button type="button" onClick={() => videoInputRef.current?.click()}>
-                        📁 Choisir une vidéo
-                      </button>
+                        <button 
+                          type="button" 
+                          className="btn-media-action secondary"
+                          onClick={() => videoInputRef.current?.click()}
+                        >
+                          <FaFolderOpen /> Choisir un fichier
+                        </button>
+                      </div>
 
                       <input
                         ref={videoInputRef}
@@ -436,13 +520,22 @@ export default function Elevage() {
                       />
 
                       {videoPreviewUrl ? (
-                        <video src={videoPreviewUrl} controls style={{ width: '100%', maxHeight: '220px', borderRadius: '10px' }} />
+                        <div className="video-preview-wrapper">
+                          <video src={videoPreviewUrl} controls className="modal-video-preview" />
+                          <button 
+                            type="button" 
+                            className="btn-remove-video"
+                            onClick={() => { setVideoFile(null); setVideoPreviewUrl(null); }}
+                          >
+                            <FaTimes /> Supprimer la vidéo
+                          </button>
+                        </div>
                       ) : (
-                        <video ref={previewVideoRef} autoPlay muted playsInline style={{ width: '100%', maxHeight: '220px', borderRadius: '10px', display: isRecordingVideo ? 'block' : 'none' }} />
+                        <video ref={previewVideoRef} autoPlay muted playsInline className="modal-video-preview recording" style={{ display: isRecordingVideo ? 'block' : 'none' }} />
                       )}
 
-                      <small>
-                        La caméra s'ouvre directement pour enregistrer la preuve vidéo.
+                      <small className="help-text">
+                        Enregistrez ou déposez un extrait vidéo horodaté pour authentifier cette intervention.
                       </small>
                     </div>
                   </>

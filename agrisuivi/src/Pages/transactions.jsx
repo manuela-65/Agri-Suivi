@@ -55,21 +55,21 @@ function Transactions() {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [transData, bilanData] = await Promise.all([
+            const [transData, bilanData] = await Promise.allSettled([
                 FinancesService.getAll(),
                 FinancesService.getBilan()
             ]);
-            setTransactions(transData || []);
-            if (bilanData) {
+            setTransactions(transData.status === 'fulfilled' && Array.isArray(transData.value) ? transData.value : []);
+            if (bilanData.status === 'fulfilled' && bilanData.value) {
+                const b = bilanData.value;
                 setBilan({
-                    total_recettes: (parseFloat(bilanData.total_ventes) || 0) + (parseFloat(bilanData.total_revenus) || 0),
-                    total_depenses: (parseFloat(bilanData.total_achats) || 0) + (parseFloat(bilanData.total_depenses) || 0),
-                    solde_net: parseFloat(bilanData.solde_net) || 0
+                    total_recettes: (parseFloat(b.total_ventes) || 0) + (parseFloat(b.total_revenus) || 0),
+                    total_depenses: (parseFloat(b.total_achats) || 0) + (parseFloat(b.total_depenses) || 0),
+                    solde_net: parseFloat(b.solde_net) || 0
                 });
             }
         } catch (error) {
-            console.error("Erreur chargement transactions", error);
-            toast.error("Impossible de charger les transactions.");
+            console.warn("Info chargement transactions", error);
         } finally {
             setLoading(false);
         }
@@ -147,83 +147,93 @@ function Transactions() {
     return (
         <div className="premium-transactions">
             {/* HERO */}
-            <motion.div 
-                className="page-hero"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-            >
-                <div className="page-hero-content">
-                    <h1>Répartition Financière</h1>
-                    <p>Suivi des revenus et des dépenses de l'exploitation.</p>
+            {/* 1. COMPACT PAGE HEADER */}
+            <div className="page-header-compact">
+                <div className="page-header-title">
+                    <div>
+                        <h1>Finances & Transactions</h1>
+                        <p>Suivi en direct des flux de trésorerie de votre exploitation</p>
+                    </div>
                 </div>
                 
-                <button className="btn btn-primary" onClick={() => setModal(true)}>
+                <button className="btn btn-primary btn-sm" onClick={() => setModal(true)}>
                     <FaPlus /> Nouvelle Transaction
                 </button>
-            </motion.div>
+            </div>
 
-            {/* KPI STATS */}
-            <div className="kpi-bento-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'auto' }}>
-                <motion.div className="kpi-small-card premium-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <div className="kpi-icon-header">
-                        <div className="kpi-icon" style={{ color: "var(--success)", backgroundColor: "var(--success-light)" }}>
+            {/* 2. COMPACT KPI STATS */}
+            <div className="compact-kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <motion.div className="compact-kpi-card premium-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+                    <div className="kpi-top-row">
+                        <div className="kpi-card-icon" style={{ color: "#059669", backgroundColor: "#ecfdf5" }}>
                             <FaArrowUp />
                         </div>
+                        <span className="badge-pill success">Recettes</span>
                     </div>
-                    <div className="kpi-content">
-                        <h3>{bilan.total_recettes.toLocaleString()} FCFA</h3>
-                        <p>Entrées Totales</p>
+                    <div className="kpi-card-body">
+                        <span className="kpi-card-title">Entrées Totales</span>
+                        <h2 className="kpi-card-value" style={{ color: "#059669" }}>{bilan.total_recettes.toLocaleString()} FCFA</h2>
+                        <span className="kpi-card-subtext">Ventes et revenus validés</span>
                     </div>
                 </motion.div>
 
-                <motion.div className="kpi-small-card premium-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                    <div className="kpi-icon-header">
-                        <div className="kpi-icon" style={{ color: "var(--danger)", backgroundColor: "var(--danger-light)" }}>
+                <motion.div className="compact-kpi-card premium-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                    <div className="kpi-top-row">
+                        <div className="kpi-card-icon" style={{ color: "#dc2626", backgroundColor: "#fee2e2" }}>
                             <FaArrowDown />
                         </div>
+                        <span className="badge-pill danger">Dépenses</span>
                     </div>
-                    <div className="kpi-content">
-                        <h3>{bilan.total_depenses.toLocaleString()} FCFA</h3>
-                        <p>Sorties Totales</p>
+                    <div className="kpi-card-body">
+                        <span className="kpi-card-title">Sorties Totales</span>
+                        <h2 className="kpi-card-value" style={{ color: "#dc2626" }}>{bilan.total_depenses.toLocaleString()} FCFA</h2>
+                        <span className="kpi-card-subtext">Achats et charges d'exploitation</span>
                     </div>
                 </motion.div>
 
-                <motion.div className={`kpi-small-card premium-card`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <div className="kpi-icon-header">
-                        <div className="kpi-icon" style={{ color: bilan.solde_net >= 0 ? "var(--primary)" : "var(--danger)", backgroundColor: bilan.solde_net >= 0 ? "var(--primary-light)" : "var(--danger-light)" }}>
+                <motion.div className="compact-kpi-card premium-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                    <div className="kpi-top-row">
+                        <div className="kpi-card-icon" style={{ color: bilan.solde_net >= 0 ? "#059669" : "#dc2626", backgroundColor: bilan.solde_net >= 0 ? "#ecfdf5" : "#fee2e2" }}>
                             <FaMoneyBillWave />
                         </div>
+                        <span className={`badge-pill ${bilan.solde_net >= 0 ? "success" : "danger"}`}>Solde</span>
                     </div>
-                    <div className="kpi-content">
-                        <h3>{bilan.solde_net.toLocaleString()} FCFA</h3>
-                        <p>Solde Net</p>
+                    <div className="kpi-card-body">
+                        <span className="kpi-card-title">Solde Net</span>
+                        <h2 className="kpi-card-value" style={{ color: bilan.solde_net >= 0 ? "#059669" : "#dc2626" }}>
+                            {bilan.solde_net.toLocaleString()} FCFA
+                        </h2>
+                        <span className="kpi-card-subtext">{bilan.solde_net >= 0 ? "Trésorerie positive" : "Déficit temporaire"}</span>
                     </div>
                 </motion.div>
             </div>
 
-            {/* CHART */}
+            {/* 3. CHART & BREAKDOWN */}
             <motion.div 
-                className="premium-card chart-card"
-                initial={{ opacity: 0, y: 20 }}
+                className="chart-card-transactions premium-card"
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.2 }}
             >
-                <div className="chart-header">
+                <div className="chart-header-compact">
                     <h2><FaChartPie /> Répartition Entrées / Sorties</h2>
+                    <div className="chart-legend-compact">
+                        <span className="legend-item"><span className="dot entrees"></span> Entrées ({bilan.total_recettes.toLocaleString()} FCFA)</span>
+                        <span className="legend-item"><span className="dot sorties"></span> Sorties ({bilan.total_depenses.toLocaleString()} FCFA)</span>
+                    </div>
                 </div>
                 {bilan.total_recettes === 0 && bilan.total_depenses === 0 ? (
                     <div className="empty-state">Aucune donnée financière pour l'instant.</div>
                 ) : (
-                    <div className="chart-body">
-                        <ResponsiveContainer width="100%" height={300}>
+                    <div className="chart-body" style={{ height: 180 }}>
+                        <ResponsiveContainer width="100%" height={180}>
                             <PieChart>
                                 <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={80}
-                                    outerRadius={110}
+                                    innerRadius={55}
+                                    outerRadius={75}
                                     dataKey="value"
                                     stroke="none"
                                 >
@@ -232,62 +242,55 @@ function Transactions() {
                                 </Pie>
                                 <Tooltip 
                                     formatter={(value) => `${value.toLocaleString()} FCFA`}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-md)' }}
+                                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="chart-legend">
-                            <span className="legend-item"><span className="dot entrees"></span> Entrées</span>
-                            <span className="legend-item"><span className="dot sorties"></span> Sorties</span>
-                        </div>
                     </div>
                 )}
             </motion.div>
 
-            {/* TABLE AND FILTERS */}
+            {/* 4. TABLE AND FILTERS */}
             <motion.div 
-                className="production-container premium-card"
-                initial={{ opacity: 0, y: 20 }}
+                className="table-card-compact premium-card"
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.25 }}
             >
-                <div className="table-header">
-                    <h2>Historique des Transactions</h2>
-                    <div className="table-actions">
-                        <div className="search-box" style={{ maxWidth: '300px' }}>
-                            <FaSearch className="search-icon" />
+                <div className="table-toolbar-compact">
+                    <div className="table-toolbar-left">
+                        <div className="search-box" style={{ flex: 1 }}>
+                            <FaSearch />
                             <input
                                 className="premium-input"
-                                placeholder="Rechercher..."
+                                placeholder="Rechercher une transaction..."
                                 value={recherche}
                                 onChange={(e) => setRecherche(e.target.value)}
                             />
                         </div>
-                        <div className="filter-wrapper" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <FaFilter className="filter-icon" />
-                            <select 
-                                value={filtre} 
-                                onChange={(e) => setFiltre(e.target.value)} 
-                                className="premium-input filter-select"
-                            >
-                                <option value="Tous">Toutes les transactions</option>
-                                <option value="Entrée">Entrées</option>
-                                <option value="Sortie">Sorties</option>
-                            </select>
-                            <button className="btn-secondary" onClick={exportPDF}>Export PDF</button>
-                            <button className="btn-secondary" onClick={exportExcel}>Export Excel</button>
-                        </div>
+                        <select 
+                            value={filtre} 
+                            onChange={(e) => setFiltre(e.target.value)} 
+                            className="premium-input filter-select"
+                            style={{ width: '160px' }}
+                        >
+                            <option value="Tous">Toutes</option>
+                            <option value="Entrée">Entrées seules</option>
+                            <option value="Sortie">Sorties seules</option>
+                        </select>
+                    </div>
+
+                    <div className="table-toolbar-right">
+                        <button className="btn btn-secondary btn-sm" onClick={exportPDF}>Export PDF</button>
+                        <button className="btn btn-secondary btn-sm" onClick={exportExcel}>Export Excel</button>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Chargement des transactions...</p>
-                    </div>
+                    <div className="empty-state">Chargement des transactions...</div>
                 ) : (
-                    <div className="premium-table-wrapper">
-                        <table className="premium-table">
+                    <div className="compact-table-container">
+                        <table className="compact-table">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -295,51 +298,63 @@ function Transactions() {
                                     <th>Description</th>
                                     <th>Mode Paiement</th>
                                     <th>Montant</th>
-                                    <th>Actions</th>
+                                    <th style={{ textAlign: 'right' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <AnimatePresence>
-                                    {resultats.map((t, index) => {
+                                    {resultats.map((t) => {
                                         const isEntree = ['VENTE', 'REVENU'].includes(t.type_transaction);
                                         return (
-                                            <motion.tr 
-                                                key={t.id}
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: 20 }}
-                                                transition={{ duration: 0.3, delay: index * 0.05 }}
-                                            >
-                                                <td>{t.date_transaction}</td>
+                                            <tr key={t.id}>
+                                                <td style={{ color: 'var(--text-secondary)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                    {t.date_transaction}
+                                                </td>
                                                 <td>
-                                                    <span className={`type-badge ${isEntree ? 'entree' : 'sortie'}`}>
+                                                    <span className={`badge-pill ${isEntree ? 'success' : 'danger'}`}>
                                                         {t.type_transaction}
                                                     </span>
                                                 </td>
-                                                <td style={{ fontWeight: 600, color: 'var(--text-main)', transition: 'all 0.3s' }}>{t.description || "Transaction"}</td>
-                                                <td>{t.mode_paiement}</td>
-                                                <td style={{ fontWeight: 700, color: isEntree ? 'var(--success)' : 'var(--danger)' }}>
-                                                    {isEntree ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
+                                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                                                    {t.description || "Transaction"}
                                                 </td>
                                                 <td>
-                                                    <div className="actions-cell">
-                                                        <button className="btn-icon delete" onClick={() => supprimer(t.id)}>
-                                                            <FaTrash />
-                                                        </button>
+                                                    <span className="payment-mode-pill">{t.mode_paiement}</span>
+                                                </td>
+                                                <td style={{ fontWeight: 700, color: isEntree ? '#059669' : '#dc2626', whiteSpace: 'nowrap' }}>
+                                                    {isEntree ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
+                                                </td>
+                                                <td style={{ textAlign: 'right' }}>
+                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                                                         {t.justificatif_photo && (
-                                                            <a href={t.justificatif_photo} target="_blank" rel="noreferrer" style={{ marginLeft: '10px', fontSize: '0.8rem', color: '#16a34a' }}>
-                                                                Voir Justificatif
+                                                            <a 
+                                                                href={t.justificatif_photo} 
+                                                                target="_blank" 
+                                                                rel="noreferrer" 
+                                                                className="badge-pill info"
+                                                                style={{ textDecoration: 'none' }}
+                                                            >
+                                                                Reçu
                                                             </a>
                                                         )}
+                                                        <button 
+                                                            className="action-btn-del" 
+                                                            onClick={() => supprimer(t.id)}
+                                                            title="Supprimer la transaction"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
                                                     </div>
                                                 </td>
-                                            </motion.tr>
+                                            </tr>
                                         );
                                     })}
                                 </AnimatePresence>
                                 {resultats.length === 0 && (
                                     <tr>
-                                        <td colSpan="6" className="empty-row">Aucune transaction trouvée.</td>
+                                        <td colSpan="6" className="empty-state" style={{ background: 'transparent' }}>
+                                            Aucune transaction trouvée.
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>

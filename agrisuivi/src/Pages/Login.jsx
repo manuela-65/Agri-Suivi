@@ -9,12 +9,14 @@ import {
   FaArrowRight,
   FaLeaf,
   FaShieldAlt,
-  FaChartLine,
+  FaStar,
+  FaCheckCircle,
+  FaArrowLeft
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import "../Pages/Login.css";
+import "./Login.css";
 
 function Login() {
   const navigate = useTransitionNavigate();
@@ -44,20 +46,13 @@ function Login() {
     }
 
     const normalizedEmail = formData.email.trim().toLowerCase();
-
     setLoading(true);
 
     try {
-      const data = await login(
-        normalizedEmail,
-        formData.password
-        // Ne pas passer de tenant - laisser le backend auto-détecter
-      );
-
+      const data = await login(normalizedEmail, formData.password);
       toast.success("Bienvenue sur AgriSuivi !");
 
       const role = data?.user?.role || "PROPRIETAIRE";
-
       if (role === "ADMIN_PLATFORME") {
         navigate("/super-admin", { fullScreen: true });
       } else if (role === "EMPLOYE") {
@@ -66,7 +61,6 @@ function Login() {
         navigate("/dashboard", { fullScreen: true });
       }
     } catch (error) {
-      // Traduire les messages Django JWT en français
       let msg = error.message || "";
       if (
         msg.toLowerCase().includes("no active account") ||
@@ -83,219 +77,163 @@ function Login() {
     }
   };
 
-
   return (
-    <div className="login-page">
-
-      {/* Background animé */}
-      <div className="background-blur blur-one"></div>
-      <div className="background-blur blur-two"></div>
-
-      {/* Partie gauche */}
-
-      <motion.section
-        className="login-left"
-        initial={{ x: -80, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{
-          duration: 0.8,
-        }}
+    <div className="auth-split-page">
+      {/* LEFT VISUAL HERO PANEL (Landscape Style) */}
+      <motion.div 
+        className="auth-visual-panel"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7 }}
+        style={{ backgroundImage: "url('/assets/tractor-field.jpg')" }}
       >
-        <div className="overlay">
-
-          <div className="logo-box">
-
-            <div className="logo-circle">
+        <div className="auth-visual-overlay" />
+        
+        {/* Top Brand Link */}
+        <div className="auth-brand-top">
+          <Link to="/" className="auth-brand-pill">
+            <div className="brand-circle">
               <FaLeaf />
             </div>
-
-            <h1>AgriSuivi</h1>
-
-          </div>
-
-          <h2>
-            Gérez votre exploitation agricole
-            en toute simplicité.
-          </h2>
-
-          <p>
-            Une plateforme SaaS intelligente permettant
-            de gérer vos employés, vos exploitations,
-            vos stocks, vos transactions et la
-            traçabilité complète de toutes vos activités.
-          </p>
-
-          <div className="feature-card">
-            <FaShieldAlt />
-            <div>
-              <h4>Sécurité Multi-Tenant</h4>
-              <span>
-                Chaque exploitation possède ses
-                propres données sécurisées.
-              </span>
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <FaChartLine />
-            <div>
-              <h4>Suivi intelligent</h4>
-              <span>
-                Consultez vos statistiques en temps réel.
-              </span>
-            </div>
-          </div>
-
-          <div className="feature-card">
-            <FaLeaf />
-            <div>
-              <h4>Traçabilité complète</h4>
-              <span>
-                Toutes les opérations sont enregistrées.
-              </span>
-            </div>
-          </div>
-
-          <div className="stats">
-
-            <div className="stat">
-              <h3>250+</h3>
-              <p>Exploitations</p>
-            </div>
-
-            <div className="stat">
-              <h3>1800+</h3>
-              <p>Employés</p>
-            </div>
-
-            <div className="stat">
-              <h3>99.9%</h3>
-              <p>Disponibilité</p>
-            </div>
-
-          </div>
-
+            <span className="brand-text">AgriSuivi</span>
+          </Link>
+          <Link to="/" className="auth-back-link">
+            <FaArrowLeft /> Retour au site
+          </Link>
         </div>
-      </motion.section>
 
-      {/* Partie droite */}
-
-      <motion.section
-        className="login-right"
-        initial={{ x: 80, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{
-          duration: 0.8,
-          delay: 0.2,
-        }}
-      >
-        <motion.form
-          className="login-card"
-          onSubmit={handleSubmit}
-          whileHover={{
-            y: -4,
-          }}
-        >
-          <span className="badge">
-            Connexion sécurisée
-          </span>
-
-          <h2>Bienvenue</h2>
-
-          <p className="subtitle">
-            Connectez-vous à votre espace AgriSuivi.
+        {/* Center Inspiration Text */}
+        <div className="auth-visual-center">
+          <div className="auth-tagline-badge">
+            <span className="badge-live-dot" />
+            Plateforme Cloud Multi-Tenant
+          </div>
+          <h1>Sustainable Agriculture, Intelligently Managed.</h1>
+          <p>
+            Connectez-vous pour piloter vos parcelles, superviser la santé de vos troupeaux, gérer les stocks d'intrants et certifier la traçabilité de chaque journée de travail.
           </p>
+        </div>
 
-          <div className="input-group">
+        {/* Bottom Social Proof Card */}
+        <div className="auth-social-proof-card">
+          <div className="proof-header">
+            <div className="stars-mini">
+              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+            </div>
+            <strong>4.9 / 5</strong>
+          </div>
+          <p>« AgriSuivi nous fait gagner plus de 8 heures par semaine sur la gestion de nos équipes et de nos stocks. »</p>
+          <div className="proof-footer">
+            <span>Marc D., Exploitant Céréalier (350 Ha)</span>
+            <span className="verified-tag"><FaCheckCircle /> Certifié</span>
+          </div>
+        </div>
+      </motion.div>
 
-            <FaEnvelope />
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Adresse email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-
+      {/* RIGHT FORM PANEL */}
+      <motion.div 
+        className="auth-form-panel"
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.1 }}
+      >
+        <div className="auth-form-container">
+          {/* Segmented Switch Pill */}
+          <div className="auth-segmented-switch">
+            <button type="button" className="switch-btn active">
+              Se connecter
+            </button>
+            <button 
+              type="button" 
+              className="switch-btn" 
+              onClick={() => navigate("/register")}
+            >
+              Créer un compte
+            </button>
           </div>
 
-          <div className="input-group">
+          <div className="auth-form-header">
+            <h2>Bienvenue sur votre espace</h2>
+            <p>Saisissez vos identifiants pour accéder à votre tableau de bord.</p>
+          </div>
 
-            <FaLock />
+          <form onSubmit={handleSubmit} className="auth-modern-form">
+            <div className="auth-field-group">
+              <label htmlFor="login-email">Adresse Email</label>
+              <div className="auth-input-wrapper">
+                <FaEnvelope className="field-icon" />
+                <input
+                  id="login-email"
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="nom@exploitation.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                />
+              </div>
+            </div>
 
-            <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              name="password"
-              placeholder="Mot de passe"
-              value={formData.password}
-              onChange={handleChange}
-            />
+            <div className="auth-field-group">
+              <div className="field-label-row">
+                <label htmlFor="login-password">Mot de passe</label>
+                <Link to="/forgot-password" className="forgot-link">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+              <div className="auth-input-wrapper">
+                <FaLock className="field-icon" />
+                <input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  placeholder="••••••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? "Masquer" : "Afficher"}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
 
             <button
-              type="button"
-              className="show-password"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
             >
-              {showPassword ? (
-                <FaEyeSlash />
+              {loading ? (
+                <span className="submit-loading-text">Connexion en cours...</span>
               ) : (
-                <FaEye />
+                <>
+                  <span>Accéder à mon exploitation</span>
+                  <span className="btn-arrow-bubble"><FaArrowRight /></span>
+                </>
               )}
             </button>
+          </form>
 
+          <div className="auth-form-footer">
+            <p>
+              Nouvel exploitant agricole ?{" "}
+              <Link to="/register" className="highlight-link">
+                Créer une exploitation gratuitement
+              </Link>
+            </p>
+            <div className="security-notice">
+              <FaShieldAlt /> Données cryptées et isolées selon l'architecture Multi-Tenant.
+            </div>
           </div>
-
-          <div className="forgot-password">
-            <Link to="/forgot-password">
-              Mot de passe oublié ?
-            </Link>
-          </div>
-
-          <motion.button
-            className="login-btn"
-            whileHover={{
-              scale: 1.03,
-            }}
-            whileTap={{
-              scale: 0.97,
-            }}
-            disabled={loading}
-          >
-            {loading ? (
-              "Connexion..."
-            ) : (
-              <>
-                Se connecter
-                <FaArrowRight />
-              </>
-            )}
-          </motion.button>
-
-          <div className="divider">
-            <span>ou</span>
-          </div>
-
-          <p className="register-text">
-            Vous êtes propriétaire ?
-          </p>
-
-          <Link
-            to="/register"
-            className="register-btn"
-          >
-            Créer une exploitation
-          </Link>
-
-        </motion.form>
-      </motion.section>
-
+        </div>
+      </motion.div>
     </div>
   );
 }

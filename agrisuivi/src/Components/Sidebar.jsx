@@ -17,12 +17,12 @@ import {
   FaUserCircle,
   FaChevronLeft,
   FaChevronRight,
-  FaEnvelope,
   FaBars,
-  FaBuilding
-  ,FaRobot
+  FaBuilding,
+  FaTasks,
+  FaClipboardList
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import "../Styles/Sidebar.css";
 
@@ -36,57 +36,63 @@ function Sidebar({ isOpen, onClose }) {
 
   const allMenuItems = [
     {
-      name: "Dashboard",
+      name: "Tableau de bord",
       path: "/dashboard",
       icon: <FaHome />,
-      roles: ["PROPRIETAIRE"]
+      roles: ["PROPRIETAIRE", "COMPTABLE"]
     },
     {
-      name: "Admin. Plateforme",
+      name: "Admin Plateforme",
       path: "/super-admin",
       icon: <FaBuilding />,
       roles: ["ADMIN_PLATFORME"]
     },
     {
-      name: "Espace Employé",
+      name: "Espace Terrain",
       path: "/employe-dashboard",
       icon: <FaUsers />,
       roles: ["EMPLOYE"]
     },
     {
-      name: "Exploitations",
-      path: "/exploitations",
-      icon: <FaTractor />,
-      roles: ["PROPRIETAIRE"]
+      name: "Mes Tâches",
+      path: "/taches",
+      icon: <FaTasks />,
+      roles: ["EMPLOYE"]
     },
     {
-      name: "Employés",
+      name: "Activités",
+      path: "/activites",
+      icon: <FaClipboardList />,
+      roles: ["EMPLOYE"]
+    },
+    {
+      name: "Équipe & Présence",
       path: "/employes",
       icon: <FaUsers />,
       roles: ["PROPRIETAIRE"]
     },
     {
-      name: "Mes Cultures",
+      name: "Cultures",
       path: "/cultures",
       icon: <FaSeedling />,
       roles: ["PROPRIETAIRE", "EMPLOYE", "COMPTABLE"],
       condition: ['CULTURES', 'MIXTE'].includes(settings?.type_exploitation) || !settings?.type_exploitation
     },
     {
-      name: "Mon Élevage",
+      name: "Élevage",
       path: "/elevage",
       icon: <FaTractor />,
       roles: ["PROPRIETAIRE", "EMPLOYE"],
       condition: ['ELEVAGE', 'MIXTE'].includes(settings?.type_exploitation)
     },
     {
-      name: "Stocks",
+      name: "Stocks & Intrants",
       path: "/stocks",
       icon: <FaBox />,
       roles: ["PROPRIETAIRE", "EMPLOYE"]
     },
     {
-      name: "Transactions",
+      name: "Finances",
       path: "/transactions",
       icon: <FaMoneyBill />,
       roles: ["PROPRIETAIRE", "COMPTABLE"]
@@ -98,24 +104,10 @@ function Sidebar({ isOpen, onClose }) {
       roles: ["PROPRIETAIRE", "COMPTABLE"]
     },
     {
-      name: "Traçabilité",
+      name: "Traçabilité & Audit",
       path: "/tracabilite",
       icon: <FaHistory />,
       roles: ["PROPRIETAIRE"]
-    },
-    {
-      name: "Assistant IA",
-      path: "/assistant-ia",
-      icon: <FaRobot />,
-      roles: ["PROPRIETAIRE"]
-    },
-
-
-    {
-      name: "Mon Profil",
-      path: "/profile",
-      icon: <FaUserCircle />,
-      roles: ["PROPRIETAIRE", "EMPLOYE", "COMPTABLE", "ADMIN_PLATFORME"]
     },
     {
       name: "Paramètres",
@@ -125,7 +117,9 @@ function Sidebar({ isOpen, onClose }) {
     }
   ];
 
-  const menu = allMenuItems.filter(item => item.roles.includes(role) && (item.condition === undefined || item.condition));
+  const menu = allMenuItems.filter(
+    item => item.roles.includes(role) && (item.condition === undefined || item.condition)
+  );
 
   return (
     <>
@@ -137,13 +131,14 @@ function Sidebar({ isOpen, onClose }) {
 
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? 90 : 280 }}
+        animate={{ width: isCollapsed ? 68 : 240 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         className={`premium-sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""}`}
       >
-
+        {/* Brand Header */}
         <div className="sidebar-header">
-          <div className="sidebar-header-left">
-            <div className="brand-icon" onClick={() => isCollapsed && setIsCollapsed(false)} style={{ cursor: isCollapsed ? 'pointer' : 'default' }}>
+          <div className="sidebar-header-left" onClick={() => isCollapsed && setIsCollapsed(false)}>
+            <div className="brand-icon">
               {settings?.logo ? (
                 <img src={settings.logo} alt="Logo" />
               ) : (
@@ -154,32 +149,34 @@ function Sidebar({ isOpen, onClose }) {
             </div>
             {!isCollapsed && (
               <div className="brand-info">
-                <h2>{settings?.nom || "AgriSuivi"}</h2>
+                <h2>AgriSuivi</h2>
+                <span className="tenant-tag">Agri-Manager</span>
               </div>
             )}
           </div>
 
-          {!isCollapsed && (
-            <div className="sidebar-header-right">
-              <div className="notification-icon">
-                <FaEnvelope />
-                <span className="badge"></span>
-              </div>
-              <button className="toggle-sidebar-btn" onClick={() => setIsCollapsed(true)}>
-                <FaBars />
-              </button>
-            </div>
-          )}
+          <button
+            className="toggle-sidebar-btn"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? "Agrandir le menu" : "Réduire le menu"}
+          >
+            {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+          </button>
 
           <button className="close-mobile-btn" onClick={onClose}>
             <FaTimes />
           </button>
         </div>
 
+        {/* Navigation Menu */}
         <div className="sidebar-menu-container">
           <nav className="sidebar-menu">
             {menu.map((item, index) => {
-              const isActive = location.pathname === item.path || (item.path === '/exploitations' && location.pathname.startsWith('/exploitation/')) || (item.path === '/employes' && location.pathname.startsWith('/employe/'));
+              const isActive =
+                location.pathname === item.path ||
+                (item.path === "/exploitations" && location.pathname.startsWith("/exploitation/")) ||
+                (item.path === "/employes" && location.pathname.startsWith("/employe/"));
+
               return (
                 <button
                   key={index}
@@ -194,39 +191,17 @@ function Sidebar({ isOpen, onClose }) {
                     <span className="menu-icon">{item.icon}</span>
                     {!isCollapsed && <span className="menu-text">{item.name}</span>}
                   </div>
-                  {!isCollapsed && !isActive && (
-                    <span className="menu-chevron">
-                      <FaChevronRight />
-                    </span>
+                  {!isCollapsed && isActive && (
+                    <motion.div layoutId="activePill" className="active-indicator" />
                   )}
-                  {isActive && <motion.div layoutId="activeIndicator" className="active-indicator" />}
                 </button>
               );
             })}
           </nav>
         </div>
 
+        {/* Footer info & Logout */}
         <div className="sidebar-footer">
-          <div 
-            className="user-profile-card" 
-            onClick={() => {
-              if (window.innerWidth <= 1024) onClose();
-              navigateTo("/profile");
-            }}
-            style={{ cursor: "pointer" }}
-            title="Mon Profil"
-          >
-            <div className="user-avatar">
-              <FaUserCircle />
-            </div>
-            {!isCollapsed && (
-              <div className="user-info">
-                <h4>{user?.username || "Profil Utilisateur"}</h4>
-                <span>{user?.email || "Email"}</span>
-              </div>
-            )}
-          </div>
-          
           <button className="logout-btn" onClick={logout} title="Déconnexion">
             <FaSignOutAlt />
             {!isCollapsed && <span>Déconnexion</span>}

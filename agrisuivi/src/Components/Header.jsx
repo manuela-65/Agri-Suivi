@@ -1,5 +1,16 @@
-import React, { useState } from "react";
-import { FaBars, FaBell, FaChevronDown, FaUserCircle, FaBuilding, FaUser, FaEnvelope } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  FaBars,
+  FaBell,
+  FaChevronDown,
+  FaUserCircle,
+  FaTractor,
+  FaCog,
+  FaSignOutAlt,
+  FaCheck,
+  FaCalendarAlt,
+  FaUser
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useTransitionNavigate } from "../context/TransitionContext";
@@ -7,26 +18,43 @@ import { NotificationService } from "../api/apiClient";
 import "../Styles/Header.css";
 
 function Header({ onMenuClick }) {
-  const { user, tenant, settings } = useAuth();
+  const { user, tenant, settings, logout } = useAuth();
   const navigateTo = useTransitionNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  const username = user?.username || "Utilisateur";
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const username = user?.first_name || user?.username || "Utilisateur";
   const role = user?.role || "PROPRIETAIRE";
 
-        const today = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long",
+  // Compact date formatting
+  const todayFormatted = new Date().toLocaleDateString("fr-FR", {
+    weekday: "short",
     day: "numeric",
-    month: "long",
-    year: "numeric"
+    month: "short"
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 45000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfile(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const fetchNotifications = async () => {
@@ -34,11 +62,12 @@ function Header({ onMenuClick }) {
       const res = await NotificationService.getNotifications();
       setNotifications(res || []);
     } catch (error) {
-      console.error(error);
+      // quiet fail
     }
   };
 
-  const markAsRead = async (id) => {
+  const markAsRead = async (id, e) => {
+    e.stopPropagation();
     try {
       await NotificationService.markAsRead(id);
       fetchNotifications();
@@ -47,109 +76,200 @@ function Header({ onMenuClick }) {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.est_lu).length;
+  const unreadCount = notifications.filter((n) => !n.est_lu).length;
+
+  const getRoleLabel = (r) => {
+    switch (r) {
+      case "PROPRIETAIRE":
+        return "Propriétaire";
+      case "EMPLOYE":
+        return "Employé";
+      case "COMPTABLE":
+        return "Comptable";
+      case "ADMIN_PLATFORME":
+        return "Super Admin";
+      default:
+        return r;
+    }
+  };
 
   return (
-    <motion.header
-      className="premium-header glass"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <header className="premium-header glass">
+      {/* LEFT: Menu burger & Current context */}
       <div className="header-left">
-        <button className="menu-toggle" onClick={onMenuClick}>
+        <button className="menu-toggle" onClick={onMenuClick} title="Ouvrir le menu">
           <FaBars />
         </button>
-        <div className="welcome">
-          <h2>Bonjour, {username}</h2>
-          <p>Voici l'état de votre exploitation aujourd'hui</p>
+
+        <div className="header-context">
+          {tenant && tenant !== "public" ? (
+            <div className="farm-badge" title="Exploitation active">
+              <FaTractor className="farm-icon" />
+              <span className="farm-name">{settings?.nom || tenant}</span>
+            </div>
+          ) : (
+            <span className="schema-pill">Administration Centrale</span>
+          )}
         </div>
       </div>
 
+      {/* RIGHT: Date, Notifications & User menu */}
       <div className="header-right">
-        <div className="date-box">{today}</div>
+        {/* Date tag */}
+        <div className="compact-date">
+          <FaCalendarAlt className="date-icon" />
+          <span>{todayFormatted}</span>
+        </div>
 
-        <div className="notification-container" style={{ position: 'relative' }}>
-          <button className="notification-btn" onClick={() => setShowNotif(!showNotif)}>
+        {/* Notifications */}
+        <div className="notification-container" ref={notifRef}>
+          <button
+            className={`header-action-btn ${unreadCount > 0 ? "has-unread" : ""}`}
+            onClick={() => setShowNotif(!showNotif)}
+            title="Notifications"
+          >
             <FaBell />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
           </button>
-          
+
           <AnimatePresence>
             {showNotif && (
               <motion.div
-                className="profile-menu premium-card"
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="notif-dropdown"
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                style={{ width: '320px', right: 0, left: 'auto', padding: '15px' }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.15 }}
               >
-                <h4 style={{ margin: '0 0 10px 0', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>Notifications</h4>
-                {notifications.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>Aucune notification</p>
-                ) : (
-                  <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                    {notifications.map(n => (
-                      <div key={n.id} style={{ padding: '10px', borderBottom: '1px solid #f0f0f0', backgroundColor: n.est_lu ? 'transparent' : '#f0f9ff', borderRadius: '8px', marginBottom: '5px' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#333' }}>{n.titre}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#555', margin: '5px 0' }}>{n.message}</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.7rem', color: '#888' }}>{new Date(n.created_at).toLocaleDateString()}</span>
-                          {!n.est_lu && (
-                            <button onClick={() => markAsRead(n.id)} style={{ fontSize: '0.75rem', color: '#0ea5e9', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Marquer lu</button>
-                          )}
+                <div className="notif-header">
+                  <h4>Notifications</h4>
+                  {unreadCount > 0 && (
+                    <span className="badge-pill warning">{unreadCount} non lue(s)</span>
+                  )}
+                </div>
+
+                <div className="notif-body">
+                  {notifications.length === 0 ? (
+                    <div className="empty-notif">
+                      <p>Aucune notification pour le moment</p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`notif-item ${!n.est_lu ? "unread" : ""}`}
+                      >
+                        <div className="notif-info">
+                          <h5>{n.titre}</h5>
+                          <p>{n.message}</p>
+                          <span className="notif-time">
+                            {new Date(n.created_at).toLocaleDateString("fr-FR", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
                         </div>
+                        {!n.est_lu && (
+                          <button
+                            className="mark-read-btn"
+                            onClick={(e) => markAsRead(n.id, e)}
+                            title="Marquer comme lu"
+                          >
+                            <FaCheck />
+                          </button>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    ))
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="profile-dropdown" onClick={() => setShowProfile(!showProfile)}>
-          <div className="profile-trigger">
+        {/* Profile Dropdown */}
+        <div className="profile-container" ref={profileRef}>
+          <button
+            className="profile-trigger"
+            onClick={() => setShowProfile(!showProfile)}
+            title="Menu utilisateur"
+          >
             <div className="profile-avatar">
               {username.charAt(0).toUpperCase()}
             </div>
-            <div className="profile-info">
-              <h4>{username}</h4>
-              <span>{role}</span>
+            <div className="profile-text">
+              <span className="profile-name">{username}</span>
+              <span className="profile-role">{getRoleLabel(role)}</span>
             </div>
-            <FaChevronDown className="arrow" />
-          </div>
+            <FaChevronDown className="profile-chevron" />
+          </button>
 
           <AnimatePresence>
             {showProfile && (
               <motion.div
-                className="profile-menu premium-card"
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="profile-menu-dropdown"
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.15 }}
               >
-                <div className="profile-menu-header">
-                  <p><FaBuilding /> {settings?.nom || tenant || "Public"}</p>
-                  <p><FaUser /> {role}</p>
-                  <p><FaEnvelope /> {user?.email || "email@inconnu.com"}</p>
+                <div className="profile-menu-user-card">
+                  <div className="menu-user-avatar">
+                    {username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="menu-user-details">
+                    <strong>{username}</strong>
+                    <span>{user?.email || "email@agrisuivi.cm"}</span>
+                    <span className="role-tag">{getRoleLabel(role)}</span>
+                  </div>
                 </div>
-                
-                <hr className="profile-menu-divider" />
-                
-                <button 
-                  className="profile-menu-link"
-                  onClick={() => navigateTo("/parametres")}
-                >
-                  Accéder à mon profil
-                </button>
+
+                <div className="profile-menu-items">
+                  <button
+                    className="menu-item-btn"
+                    onClick={() => {
+                      setShowProfile(false);
+                      navigateTo("/profile");
+                    }}
+                  >
+                    <FaUser className="menu-item-icon" />
+                    <span>Mon Profil</span>
+                  </button>
+
+                  {role === "PROPRIETAIRE" && (
+                    <button
+                      className="menu-item-btn"
+                      onClick={() => {
+                        setShowProfile(false);
+                        navigateTo("/parametres");
+                      }}
+                    >
+                      <FaCog className="menu-item-icon" />
+                      <span>Paramètres de l'exploitation</span>
+                    </button>
+                  )}
+
+                  <div className="menu-divider" />
+
+                  <button
+                    className="menu-item-btn danger"
+                    onClick={() => {
+                      setShowProfile(false);
+                      logout();
+                    }}
+                  >
+                    <FaSignOutAlt className="menu-item-icon" />
+                    <span>Déconnexion</span>
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }
 

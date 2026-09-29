@@ -32,12 +32,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
-    padding: 30px 40px;
+    padding: 16px 24px;
 }
 
 /* Scrollbar customization for the main content */
 .page-wrapper::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 .page-wrapper::-webkit-scrollbar-track {
     background: transparent;
@@ -52,7 +52,7 @@
 
 .page-content {
     width: 100%;
-    max-width: 1400px; /* Linear / Stripe style constraint */
+    max-width: 1380px;
     margin: 0 auto;
 }
 

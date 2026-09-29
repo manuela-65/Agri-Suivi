@@ -22,17 +22,17 @@ def initialize_agrisuivi_tenants():
         }
     )
     if created:
-        print("✔ Schéma 'public' créé avec succès.")
+        print("[OK] Schema 'public' cree avec succes.")
         Domain.objects.create(
             domain='localhost',
             tenant=public_tenant,
             is_primary=True
         )
-        print("✔ Domaine 'localhost' rattaché au schéma public.")
+        print("[OK] Domaine 'localhost' rattache au schema public.")
     else:
-        print("ℹ Le schéma 'public' existe déjà.")
+        print("[INFO] Le schema 'public' existe deja.")
 
-    print("\n--- Initialisation terminée avec succès ! ---")
+    print("\n--- Initialisation terminee avec succes ! ---")
 
 if __name__ == "__main__":
     initialize_agrisuivi_tenants()

@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { StockService } from '../../api/apiClient';
-import { FaBoxOpen, FaPlus, FaMinus, FaHistory, FaExclamationTriangle } from 'react-icons/fa';
+import { FaBoxOpen, FaPlus, FaMinus, FaHistory, FaExclamationTriangle, FaSearch, FaTimes } from 'react-icons/fa';
 import './Stocks.css';
 
 export default function Stocks() {
   const [articles, setArticles] = useState([]);
   const [mouvements, setMouvements] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [stockSearch, setStockSearch] = useState("");
+  const [filterTypeArticle, setFilterTypeArticle] = useState("ALL");
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState(''); // 'article', 'mouvement'
@@ -24,13 +26,13 @@ export default function Stocks() {
     try {
       if (activeTab === 'inventaire') {
         const res = await StockService.getArticles();
-        setArticles(res);
+        setArticles(Array.isArray(res) ? res : []);
       } else {
         const res = await StockService.getMouvements();
-        setMouvements(res);
+        setMouvements(Array.isArray(res) ? res : []);
       }
     } catch (error) {
-      toast.error("Erreur de chargement des stocks.");
+      console.warn("Info chargement stocks:", error);
     } finally {
       setLoading(false);
     }
@@ -117,58 +119,132 @@ export default function Stocks() {
               key={activeTab}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}
             >
-              {activeTab === 'inventaire' && (
-                <div className="tab-pane">
-                  <div className="pane-header">
-                    <h2>Inventaire Actuel</h2>
-                    <button className="btn-add" onClick={() => handleOpenModal('article')}>
-                      <FaPlus /> Nouvel Article
-                    </button>
+              {activeTab === 'inventaire' && (() => {
+                const filteredArticles = (articles || []).filter(item => {
+                  const q = stockSearch.toLowerCase();
+                  const matchesSearch = !q || 
+                    (item.nom || '').toLowerCase().includes(q) || 
+                    (item.emplacement || '').toLowerCase().includes(q);
+                  if (filterTypeArticle === 'ALERTE') {
+                    return matchesSearch && parseFloat(item.quantite_en_stock) <= parseFloat(item.seuil_alerte);
+                  }
+                  const matchesType = filterTypeArticle === 'ALL' || item.type_article === filterTypeArticle;
+                  return matchesSearch && matchesType;
+                });
+
+                const alertArticlesCount = (articles || []).filter(item => 
+                  parseFloat(item.quantite_en_stock) <= parseFloat(item.seuil_alerte)
+                ).length;
+
+                return (
+                  <div className="tab-pane">
+                    <div className="pane-header">
+                      <h2>Inventaire Actuel ({articles.length})</h2>
+                      <button className="btn-add" onClick={() => handleOpenModal('article')}>
+                        <FaPlus /> Nouvel Article
+                      </button>
+                    </div>
+
+                    {/* STOCKS TOOLBAR */}
+                    <div className="toolbar-container" style={{ marginBottom: '12px' }}>
+                      <div className="search-box">
+                        <FaSearch className="search-icon" />
+                        <input
+                          className="search-input"
+                          placeholder="Rechercher par article, lieu..."
+                          value={stockSearch}
+                          onChange={(e) => setStockSearch(e.target.value)}
+                        />
+                        {stockSearch && (
+                          <button className="search-clear-btn" onClick={() => setStockSearch("")} title="Effacer">
+                            <FaTimes />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="type-filters">
+                        <button 
+                          className={`type-filter-btn ${filterTypeArticle === 'ALL' ? 'active' : ''}`}
+                          onClick={() => setFilterTypeArticle('ALL')}
+                        >
+                          Tous <span className="filter-count">{articles.length}</span>
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterTypeArticle === 'INTRANT' ? 'active' : ''}`}
+                          onClick={() => setFilterTypeArticle('INTRANT')}
+                        >
+                          Intrants
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterTypeArticle === 'RECOLTE' ? 'active' : ''}`}
+                          onClick={() => setFilterTypeArticle('RECOLTE')}
+                        >
+                          Récoltes
+                        </button>
+                        <button 
+                          className={`type-filter-btn ${filterTypeArticle === 'EQUIPEMENT' ? 'active' : ''}`}
+                          onClick={() => setFilterTypeArticle('EQUIPEMENT')}
+                        >
+                          Équipements
+                        </button>
+                        {alertArticlesCount > 0 && (
+                          <button 
+                            className={`type-filter-btn ${filterTypeArticle === 'ALERTE' ? 'active' : ''}`}
+                            onClick={() => setFilterTypeArticle('ALERTE')}
+                            style={{ borderColor: '#fca5a5', color: '#b91c1c' }}
+                          >
+                            ⚠️ Alertes <span className="filter-count" style={{ background: '#fee2e2', color: '#b91c1c' }}>{alertArticlesCount}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="table-responsive">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Nom de l'article</th>
+                            <th>Type</th>
+                            <th>Stock Actuel</th>
+                            <th>Emplacement</th>
+                            <th>Mouvements Rapides</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredArticles.length === 0 ? (
+                            <tr><td colSpan="5" className="text-center py-6 text-gray-500">
+                              {stockSearch ? "Aucun article ne correspond à votre recherche." : "Aucun article en stock."}
+                            </td></tr>
+                          ) : filteredArticles.map(art => {
+                            const isLowStock = parseFloat(art.quantite_en_stock) <= parseFloat(art.seuil_alerte);
+                            return (
+                              <tr key={art.id} className={isLowStock ? 'low-stock-row' : ''}>
+                                <td className="font-semibold">
+                                  {isLowStock && <FaExclamationTriangle className="alert-icon" title="Stock Faible" />}
+                                  {art.nom}
+                                </td>
+                                <td>{art.type_article}</td>
+                                <td className={`stock-qty ${isLowStock ? 'text-danger' : ''}`}>
+                                  <span>{art.quantite_en_stock}</span> {art.unite_mesure}
+                                </td>
+                                <td>{art.emplacement || '-'}</td>
+                                <td className="actions-cell">
+                                  <button className="btn-icon add-stock" onClick={() => handleOpenModal('mouvement', art.id, 'ENTREE')} title="Entrée">
+                                    <FaPlus />
+                                  </button>
+                                  <button className="btn-icon remove-stock" onClick={() => handleOpenModal('mouvement', art.id, 'SORTIE')} title="Sortie">
+                                    <FaMinus />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  
-                  <div className="table-responsive">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Nom de l'article</th>
-                          <th>Type</th>
-                          <th>Stock Actuel</th>
-                          <th>Emplacement</th>
-                          <th>Mouvements Rapides</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {articles.length === 0 ? (
-                          <tr><td colSpan="5" className="text-center">Aucun article en stock.</td></tr>
-                        ) : articles.map(art => {
-                          const isLowStock = parseFloat(art.quantite_en_stock) <= parseFloat(art.seuil_alerte);
-                          return (
-                            <tr key={art.id} className={isLowStock ? 'low-stock-row' : ''}>
-                              <td className="font-semibold">
-                                {isLowStock && <FaExclamationTriangle className="alert-icon" title="Stock Faible" />}
-                                {art.nom}
-                              </td>
-                              <td>{art.type_article}</td>
-                              <td className={`stock-qty ${isLowStock ? 'text-danger' : ''}`}>
-                                <span>{art.quantite_en_stock}</span> {art.unite_mesure}
-                              </td>
-                              <td>{art.emplacement || '-'}</td>
-                              <td className="actions-cell">
-                                <button className="btn-icon add-stock" onClick={() => handleOpenModal('mouvement', art.id, 'ENTREE')} title="Entrée">
-                                  <FaPlus />
-                                </button>
-                                <button className="btn-icon remove-stock" onClick={() => handleOpenModal('mouvement', art.id, 'SORTIE')} title="Sortie">
-                                  <FaMinus />
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {activeTab === 'historique' && (
                 <div className="tab-pane">
@@ -216,7 +292,12 @@ export default function Stocks() {
         {isModalOpen && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="modal-content" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}>
-              <h2>{modalMode === 'article' ? "Nouvel Article" : "Enregistrer un mouvement"}</h2>
+              <div className="modal-header">
+                <h2>{modalMode === 'article' ? "Nouvel Article" : "Enregistrer un mouvement"}</h2>
+                <button type="button" className="close-modal-btn" onClick={() => setIsModalOpen(false)} title="Fermer">
+                  <FaTimes />
+                </button>
+              </div>
               <form onSubmit={handleSubmit} className="generic-form">
                 
                 {modalMode === 'article' ? (

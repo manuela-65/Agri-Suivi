@@ -11,17 +11,18 @@ import {
   FaBuilding,
   FaLeaf,
   FaArrowRight,
-  FaIdCard,
+  FaArrowLeft,
+  FaShieldAlt,
+  FaStar,
+  FaCheckCircle,
+  FaTractor
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-
 import "./Register.css";
 
-
 function Register() {
-
   const navigate = useTransitionNavigate();
   const { registerTenant } = useAuth();
 
@@ -37,12 +38,11 @@ function Register() {
     telephone: "",
     password: "",
     confirmation: "",
-    type_exploitation: "CULTURES",
+    type_exploitation: "MIXTE",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Auto-générer le schema_name depuis le nom d'exploitation (slug)
     if (name === "exploitation") {
       const slug = value
         .toLowerCase()
@@ -92,7 +92,7 @@ function Register() {
       });
 
       toast.success(
-        "Exploitation créée avec succès ! Connectez-vous maintenant.",
+        "Exploitation créée avec succès ! Vous pouvez vous connecter.",
         { duration: 5000 }
       );
 
@@ -106,550 +106,256 @@ function Register() {
     }
   };
 
-
-
   return (
-
-
-    <div className="register-page">
-
-
-      {/* ======================
-            PARTIE GAUCHE
-      ======================= */}
-
-
-      <motion.div
-
-        className="register-left"
-
-        initial={{opacity:0,x:-50}}
-
-        animate={{opacity:1,x:0}}
-
-        transition={{duration:.8}}
-
+    <div className="auth-split-page">
+      {/* LEFT VISUAL PANEL */}
+      <motion.div 
+        className="auth-visual-panel"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7 }}
+        style={{ backgroundImage: "url('/assets/greenhouse-sprouts.jpg')" }}
       >
-
-
-        <div className="register-overlay">
-
-
-          <div className="logo-box">
-
-
-            <div className="logo-circle">
-
+        <div className="auth-visual-overlay" />
+        
+        {/* Brand link top */}
+        <div className="auth-brand-top">
+          <Link to="/" className="auth-brand-pill">
+            <div className="brand-circle">
               <FaLeaf />
-
             </div>
-
-
-            <h1>
-              AgriSuivi
-            </h1>
-
-
-          </div>
-
-
-
-
-          <h2>
-
-            Créez votre espace
-            d'exploitation intelligent
-
-          </h2>
-
-
-
-
-          <p>
-
-            Centralisez la gestion de votre exploitation,
-            suivez vos employés, vos stocks et vos activités
-            depuis une seule plateforme.
-
-          </p>
-
-
-
-
-          <div className="feature-card">
-
-
-            <FaBuilding />
-
-
-            <div>
-
-              <h4>
-                Gestion complète
-              </h4>
-
-
-              <span>
-                Gérez vos exploitations facilement.
-              </span>
-
-            </div>
-
-
-          </div>
-
-
-
-
-
-          <div className="feature-card">
-
-
-            <FaUser />
-
-
-            <div>
-
-              <h4>
-                Gestion des employés
-              </h4>
-
-
-              <span>
-                Contrôlez les accès et activités.
-              </span>
-
-
-            </div>
-
-
-          </div>
-
-
-
-
-
-          <div className="feature-card">
-
-
-            <FaLeaf />
-
-
-            <div>
-
-              <h4>
-                Traçabilité agricole
-              </h4>
-
-
-              <span>
-                Gardez l'historique de vos opérations.
-              </span>
-
-
-            </div>
-
-
-          </div>
-
-
-
+            <span className="brand-text">AgriSuivi</span>
+          </Link>
+          <Link to="/" className="auth-back-link">
+            <FaArrowLeft /> Retour au site
+          </Link>
         </div>
 
+        {/* Center Inspiration Text */}
+        <div className="auth-visual-center">
+          <div className="auth-tagline-badge">
+            <span className="badge-live-dot" />
+            Création d'Exploitation Sécurisée
+          </div>
+          <h1>Join Thousands of Modern Farming Pioneers.</h1>
+          <p>
+            Rejoignez des milliers de producteurs qui gèrent leurs cultures, troupeaux, stocks et équipes agricoles depuis une interface unique et ultra-performante.
+          </p>
+        </div>
 
+        {/* Bottom Social Proof Card */}
+        <div className="auth-social-proof-card">
+          <div className="proof-header">
+            <div className="stars-mini">
+              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+            </div>
+            <strong>Essai 100% Gratuit</strong>
+          </div>
+          <p>« La traçabilité vidéo et la feuille de présence quotidienne ont complètement transformé notre organisation terrain. »</p>
+          <div className="proof-footer">
+            <span>Coopérative Maraîchère BioTerra</span>
+            <span className="verified-tag"><FaCheckCircle /> Certifié</span>
+          </div>
+        </div>
       </motion.div>
 
-
-
-
-
-
-      {/* ======================
-            FORMULAIRE
-      ======================= */}
-
-
-
-      <motion.div
-
-        className="register-right"
-
-        initial={{opacity:0,x:50}}
-
-        animate={{opacity:1,x:0}}
-
-        transition={{duration:.8}}
-
+      {/* RIGHT FORM PANEL */}
+      <motion.div 
+        className="auth-form-panel"
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.1 }}
       >
+        <div className="auth-form-container register-container">
+          {/* Segmented Switch Pill */}
+          <div className="auth-segmented-switch">
+            <button 
+              type="button" 
+              className="switch-btn" 
+              onClick={() => navigate("/login")}
+            >
+              Se connecter
+            </button>
+            <button type="button" className="switch-btn active">
+              Créer un compte
+            </button>
+          </div>
 
+          <div className="auth-form-header">
+            <h2>Créer votre exploitation</h2>
+            <p>Démarrez en quelques secondes sans carte bancaire.</p>
+          </div>
 
+          <form onSubmit={handleSubmit} className="auth-modern-form">
+            {/* Ligne 1 : Nom et Type */}
+            <div className="form-row-duo">
+              <div className="auth-field-group">
+                <label htmlFor="reg-farm">Nom de l'Exploitation</label>
+                <div className="auth-input-wrapper">
+                  <FaBuilding className="field-icon" />
+                  <input
+                    id="reg-farm"
+                    type="text"
+                    name="exploitation"
+                    required
+                    placeholder="Ex: Domaine de la Vallée"
+                    value={formData.exploitation}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
 
-
-        <div className="register-card">
-
-
-
-          <span className="badge">
-
-            Nouvelle exploitation
-
-          </span>
-
-
-
-
-          <h2>
-
-            Créer un compte
-
-          </h2>
-
-
-
-
-          <p className="subtitle">
-
-            Commencez à gérer votre exploitation
-            avec AgriSuivi.
-
-          </p>
-
-
-
-
-
-          <form onSubmit={handleSubmit}>
-
-
-
-            <div className="input-group">
-
-              <FaBuilding />
-
-              <input
-
-                type="text"
-
-                name="exploitation"
-
-                placeholder="Nom de l'exploitation"
-
-                value={formData.exploitation}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
+              <div className="auth-field-group">
+                <label htmlFor="reg-type">Type d'activité</label>
+                <div className="auth-input-wrapper">
+                  <FaTractor className="field-icon" />
+                  <select
+                    id="reg-type"
+                    name="type_exploitation"
+                    value={formData.type_exploitation}
+                    onChange={handleChange}
+                  >
+                    <option value="MIXTE">Polyculture & Élevage (Mixte)</option>
+                    <option value="CULTURES">Cultures Végétales</option>
+                    <option value="ELEVAGE">Élevage / Cheptel</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            {/* Identifiant unique auto-généré et modifiable */}
-            <div className="input-group">
+            {/* Ligne 2 : Propriétaire et Téléphone */}
+            <div className="form-row-duo">
+              <div className="auth-field-group">
+                <label htmlFor="reg-owner">Nom du Gérant / Propriétaire</label>
+                <div className="auth-input-wrapper">
+                  <FaUser className="field-icon" />
+                  <input
+                    id="reg-owner"
+                    type="text"
+                    name="proprietaire"
+                    required
+                    placeholder="Prénom et Nom"
+                    value={formData.proprietaire}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
 
-              <FaIdCard />
-
-              <input
-
-                type="text"
-
-                name="schema_name"
-
-                placeholder="Identifiant unique (ex: ferme_dupont)"
-
-                value={formData.schema_name}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
-            </div>
-            {formData.schema_name && (
-              <p style={{ fontSize: "0.78rem", color: "#16a34a", marginTop: "-12px", marginBottom: "10px", paddingLeft: "4px" }}>
-                Identifiant de connexion : <strong>{formData.schema_name}</strong>
-              </p>
-            )}
-
-            <div className="input-group">
-              <FaLeaf />
-              <select
-                name="type_exploitation"
-                value={formData.type_exploitation}
-                onChange={handleChange}
-                required
-                style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "#333", padding: "10px" }}
-              >
-                <option value="CULTURES">Cultures / Végétal</option>
-                <option value="ELEVAGE">Élevage / Animal</option>
-                <option value="MIXTE">Cultures et Élevage</option>
-              </select>
+              <div className="auth-field-group">
+                <label htmlFor="reg-phone">Téléphone</label>
+                <div className="auth-input-wrapper">
+                  <FaPhone className="field-icon" />
+                  <input
+                    id="reg-phone"
+                    type="tel"
+                    name="telephone"
+                    placeholder="+237 600 00 00 00"
+                    value={formData.telephone}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
             </div>
 
-
-
-
-
-
-            <div className="input-group">
-
-              <FaUser />
-
-              <input
-
-                type="text"
-
-                name="proprietaire"
-
-                placeholder="Nom du propriétaire"
-
-                value={formData.proprietaire}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
+            {/* Ligne 3 : Email */}
+            <div className="auth-field-group">
+              <label htmlFor="reg-email">Adresse Email Principale</label>
+              <div className="auth-input-wrapper">
+                <FaEnvelope className="field-icon" />
+                <input
+                  id="reg-email"
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="contact@exploitation.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
+            {/* Ligne 4 : Mot de passe et Confirmation */}
+            <div className="form-row-duo">
+              <div className="auth-field-group">
+                <label htmlFor="reg-password">Mot de passe</label>
+                <div className="auth-input-wrapper">
+                  <FaLock className="field-icon" />
+                  <input
+                    id="reg-password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    placeholder="Min. 6 caractères"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    title={showPassword ? "Masquer" : "Afficher"}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
 
-
-
-
-
-            <div className="input-group">
-
-              <FaEnvelope />
-
-              <input
-
-                type="email"
-
-                name="email"
-
-                placeholder="Adresse email"
-
-                value={formData.email}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
+              <div className="auth-field-group">
+                <label htmlFor="reg-confirm">Confirmation</label>
+                <div className="auth-input-wrapper">
+                  <FaLock className="field-icon" />
+                  <input
+                    id="reg-confirm"
+                    type={showConfirm ? "text" : "password"}
+                    name="confirmation"
+                    required
+                    placeholder="Confirmer mot de passe"
+                    value={formData.confirmation}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    title={showConfirm ? "Masquer" : "Afficher"}
+                  >
+                    {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
             </div>
-
-
-
-
-
-
-            <div className="input-group">
-
-              <FaPhone />
-
-              <input
-
-                type="text"
-
-                name="telephone"
-
-                placeholder="Téléphone"
-
-                value={formData.telephone}
-
-                onChange={handleChange}
-
-              />
-
-            </div>
-
-
-
-
-
-
-
-            <div className="input-group">
-
-
-              <FaLock />
-
-
-              <input
-
-                type={showPassword ? "text":"password"}
-
-                name="password"
-
-                placeholder="Mot de passe"
-
-                value={formData.password}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
-
-
-              <button
-
-                type="button"
-
-                className="show-password"
-
-                onClick={()=>setShowPassword(!showPassword)}
-
-              >
-
-                {
-
-                showPassword ?
-
-                <FaEyeSlash/>
-
-                :
-
-                <FaEye/>
-
-                }
-
-              </button>
-
-
-            </div>
-
-
-
-
-
-
-
-            <div className="input-group">
-
-
-              <FaLock />
-
-
-              <input
-
-                type={showConfirm ? "text":"password"}
-
-                name="confirmation"
-
-                placeholder="Confirmer le mot de passe"
-
-                value={formData.confirmation}
-
-                onChange={handleChange}
-
-                required
-
-              />
-
-
-
-              <button
-
-                type="button"
-
-                className="show-password"
-
-                onClick={()=>setShowConfirm(!showConfirm)}
-
-              >
-
-                {
-
-                showConfirm ?
-
-                <FaEyeSlash/>
-
-                :
-
-                <FaEye/>
-
-                }
-
-              </button>
-
-
-            </div>
-
-
-
-
-
-
 
             <button
-
-              className="register-btn"
-
               type="submit"
-
+              className="auth-submit-btn"
               disabled={loading}
-
             >
-
-              {loading ? "Création en cours..." : (
+              {loading ? (
+                <span className="submit-loading-text">Création de l'exploitation...</span>
+              ) : (
                 <>
-                  Créer mon espace
-                  <FaArrowRight />
+                  <span>Créer mon exploitation agricole</span>
+                  <span className="btn-arrow-bubble"><FaArrowRight /></span>
                 </>
               )}
-
             </button>
-
-
-
-
-
-
           </form>
 
-
-
-
-
-
-
-          <p className="login-link">
-
-            Vous avez déjà un compte ?
-
-            <Link to="/login">
-
-              Se connecter
-
-            </Link>
-
-
-          </p>
-
-
-
-
+          <div className="auth-form-footer">
+            <p>
+              Vous possédez déjà un compte ?{" "}
+              <Link to="/login" className="highlight-link">
+                Se connecter
+              </Link>
+            </p>
+            <div className="security-notice">
+              <FaShieldAlt /> Vos données sont protégées et isolées en base de données dédiée.
+            </div>
+          </div>
         </div>
-
-
-
       </motion.div>
-
-
-
-
-
     </div>
-
-
   );
-
 }
-
 
 export default Register;

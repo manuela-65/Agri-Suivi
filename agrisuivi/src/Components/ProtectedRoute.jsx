@@ -12,10 +12,16 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirige vers /dashboard si le rôle n'est pas autorisé
+  // Redirige selon le rôle si non autorisé
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = currentUser.role;
     if (!allowedRoles.includes(userRole)) {
+      if (userRole === "EMPLOYE") {
+        return <Navigate to="/employe-dashboard" replace />;
+      }
+      if (userRole === "ADMIN_PLATFORME") {
+        return <Navigate to="/super-admin" replace />;
+      }
       return <Navigate to="/dashboard" replace />;
     }
   }

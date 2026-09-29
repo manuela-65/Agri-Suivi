@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import FloatingAIAssistant from "./FloatingAIAssistant";
 
 import "../Styles/Layout.css";
 
@@ -79,6 +80,9 @@ function Layout() {
                     </AnimatePresence>
 
                 </main>
+
+                {/* ASSISTANT IA FLOTTANT (Accessible de partout) */}
+                <FloatingAIAssistant />
 
             </div>
 

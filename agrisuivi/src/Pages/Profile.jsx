@@ -123,13 +123,12 @@ function Profile() {
 
   return (
     <div className="profile-page">
-      <motion.h1 
-        className="profile-title"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        Mon Profil
-      </motion.h1>
+      <div className="page-header-compact">
+        <div className="page-header-compact-title">
+          <h1>Mon Profil & Sécurité</h1>
+          <p>Gérez vos coordonnées personnelles, mot de passe et sécurité de compte</p>
+        </div>
+      </div>
 
       <div className="profile-grid">
         

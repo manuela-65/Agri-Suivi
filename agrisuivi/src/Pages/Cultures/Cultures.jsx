@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { CultureService, EmployesService } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
-import { FaMapMarkerAlt, FaSeedling, FaTractor, FaClipboardList, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaSeedling, FaTractor, FaClipboardList, FaPlus, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 import './Cultures.css';
 
 export default function Cultures() {
@@ -404,11 +404,16 @@ export default function Cultures() {
         {isModalOpen && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="modal-content" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}>
-              <h2>
-                {modalType === 'parcelle' && 'Ajouter une Parcelle'}
-                {modalType === 'culture' && 'Nouvelle Culture'}
-                {modalType === 'activite' && 'Déclarer une Activité'}
-              </h2>
+              <div className="modal-header">
+                <h2>
+                  {modalType === 'parcelle' && 'Ajouter une Parcelle'}
+                  {modalType === 'culture' && 'Nouvelle Culture'}
+                  {modalType === 'activite' && 'Déclarer une Activité'}
+                </h2>
+                <button type="button" className="close-modal-btn" onClick={() => setIsModalOpen(false)} title="Fermer">
+                  <FaTimes />
+                </button>
+              </div>
               
               <form onSubmit={handleSubmit} className="generic-form">
                 

@@ -833,6 +833,7 @@ export const EmployeService = {
 
   getPointages: () => apiFetch("/employes/pointages/"),
   createPointage: (data) => apiFetch("/employes/pointages/", { method: "POST", body: JSON.stringify(data) }),
+  updatePointage: (id, data) => apiFetch(`/employes/pointages/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
   deletePointage: (id) => apiFetch(`/employes/pointages/${id}/`, { method: "DELETE" })
 };
 
@@ -902,4 +903,4 @@ export const StocksService = {
   createMouvement: (data) => apiFetch("/stocks/mouvements/", { method: "POST", body: JSON.stringify(data) }),
 };
 
-export const StockService = StocksService;
+export const StockService = StocksService;

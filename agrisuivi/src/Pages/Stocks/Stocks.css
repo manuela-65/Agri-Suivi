@@ -1,48 +1,35 @@
+/* ==========================================
+   STOCKS (Compact & Modern)
+========================================== */
+
 .stocks-page {
-  padding: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
 
-.stocks-header {
-  margin-bottom: 24px;
-}
-
-.stocks-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-main);
-  margin: 0 0 8px 0;
-}
-
-.stocks-header p {
-  color: var(--text-secondary);
-  font-size: 15px;
-  margin: 0;
-}
-
-/* TABS */
 .stocks-tabs {
   display: flex;
-  gap: 16px;
-  border-bottom: 2px solid var(--border-light);
-  margin-bottom: 24px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
 }
 
-/* STOCK ALERT ROW */
 .low-stock-row {
   background-color: #fef2f2 !important;
 }
 
 .alert-icon {
   color: #ef4444;
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 .stock-qty {
   font-family: monospace;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
 }
 
 .text-danger {
@@ -51,32 +38,92 @@
 
 /* ADD/REMOVE BTNS */
 .add-stock {
-  color: #10b981;
-  background: #d1fae5;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-xs);
+  padding: 2px 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .add-stock:hover {
-  background: #a7f3d0;
+  background: #d1fae5;
 }
 
 .remove-stock {
-  color: #ef4444;
-  background: #fee2e2;
+  color: #ea580c;
+  background: #ffedd5;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius-xs);
+  padding: 2px 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .remove-stock:hover {
-  background: #fecaca;
+  background: #fed7aa;
 }
 
-/* MOVEMENT BADGES */
-.mvt-badge {
-  display: inline-flex;
-  padding: 4px 12px;
-  border-radius: 20px;
+/* Modal and Toolbar Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 520px;
+  padding: 22px 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modal-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.close-modal-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   font-size: 12px;
-  font-weight: 600;
+  transition: all 0.15s;
 }
 
-.mvt-badge.entree { background: #dcfce7; color: #166534; }
-.mvt-badge.sortie { background: #e0f2fe; color: #0284c7; }
-.mvt-badge.perte { background: #fee2e2; color: #991b1b; }
+.close-modal-btn:hover {
+  background: #fef2f2;
+  color: var(--danger);
+}
